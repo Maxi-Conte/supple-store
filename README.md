@@ -1,93 +1,261 @@
-# FORJA — Tienda de suplementos
+# 🛒 Supple Store
 
-Proyecto full-stack: catálogo por categorías, carrito (invitado o logueado) y pagos con Mercado Pago (tarjetas y cuotas vía Checkout Pro).
+Tienda online de suplementos deportivos desarrollada como proyecto full-stack.
 
-## Stack
+El sistema permite visualizar productos por categorías, administrar el catálogo desde un panel de administración, gestionar un carrito de compras para invitados o usuarios registrados y realizar pagos mediante Mercado Pago.
 
-- **Frontend:** HTML + CSS + JavaScript vanilla
-- **Backend:** Node.js + Express
-- **Base de datos:** PostgreSQL
-- **Pagos:** Mercado Pago (SDK oficial, Checkout Pro)
+---
 
-## Estructura
+# 🚀 Tecnologías utilizadas
 
-```
+## Frontend
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
+
+## Backend
+- Node.js
+- Express.js
+
+## Base de datos
+- PostgreSQL
+
+## Librerías
+- bcryptjs
+- jsonwebtoken
+- cookie-parser
+- uuid
+- pg
+- Mercado Pago SDK
+
+---
+
+# 📂 Estructura del proyecto
+
+```text
 supple-store/
+│
 ├── backend/
-│   ├── server.js          # servidor Express
-│   ├── db/                # schema.sql, conexión e inicialización
-│   ├── middleware/auth.js # identifica usuario logueado o invitado
-│   └── routes/            # auth, productos, carrito, pagos
+│   ├── db/
+│   │   ├── database.js
+│   │   ├── init.js
+│   │   └── schema.sql
+│   │
+│   ├── middleware/
+│   │   └── auth.js
+│   │
+│   ├── routes/
+│   │   ├── productos.js
+│   │   ├── carrito.js
+│   │   ├── auth.js
+│   │   ├── pagos.js
+│   │   └── admin-sesion.js
+│   │
+│   └── server.js
+│
 ├── frontend/
+│   ├── css/
+│   │   ├── styles.css
+│   │   └── admin.css
+│   │
+│   ├── js/
+│   │   ├── api.js
+│   │   ├── productos.js
+│   │   ├── carrito.js
+│   │   ├── auth.js
+│   │   ├── admin.js
+│   │   ├── hero3d.js
+│   │   └── login.js
+│   │
+│   ├── img/
+│   ├── admin.html
 │   ├── index.html
-│   ├── pago-exitoso.html / pago-fallido.html / pago-pendiente.html
-│   ├── css/styles.css
-│   └── js/                # api.js, auth.js, productos.js, carrito.js
-└── package.json
+│   ├── pago-exitoso.html
+│   ├── pago-fallido.html
+│   └── pago-pendiente.html
+│
+├── package.json
+└── README.md
 ```
 
-## 1. Instalación local
+---
+
+# ✨ Funcionalidades actuales
+
+## Catálogo
+
+- Listado dinámico de productos.
+- Productos obtenidos desde PostgreSQL.
+- Filtro por categorías.
+- Búsqueda de productos.
+- Productos activos e inactivos.
+
+---
+
+## Panel de Administración
+
+Permite administrar completamente el catálogo.
+
+Actualmente incluye:
+
+- Listado de productos.
+- Estadísticas.
+- Crear productos.
+- Editar productos.
+- Eliminar productos.
+- Activar o desactivar publicaciones.
+- Filtro por categoría.
+
+---
+
+## Carrito de compras
+
+Implementado completamente desde el backend.
+
+Características:
+
+- Funciona para invitados.
+- Funciona para usuarios registrados.
+- Cookie segura para visitantes.
+- Agregar productos.
+- Modificar cantidades.
+- Eliminar productos.
+- Cálculo automático del total.
+
+---
+
+## Usuarios
+
+- Registro.
+- Inicio de sesión.
+- JWT.
+- Contraseñas encriptadas con bcrypt.
+
+---
+
+## Pagos
+
+Integración con Mercado Pago Checkout Pro.
+
+Incluye:
+
+- Creación de preferencias.
+- Redirección al checkout.
+- Páginas de:
+
+- Pago exitoso
+- Pago pendiente
+- Pago rechazado
+
+---
+
+# 🗄 Base de datos
+
+El proyecto utiliza PostgreSQL.
+
+Tablas principales:
+
+- usuarios
+- categorias
+- marcas
+- productos
+- carritos
+- carrito_items
+
+---
+
+# ⚙ Instalación
+
+Clonar el proyecto:
+
+```bash
+git clone https://github.com/Maxi-Conte/supple-store.git
+```
+
+Entrar a la carpeta:
 
 ```bash
 cd supple-store
-npm install
-cp .env.example .env
 ```
 
-Editá `.env` con:
-- `DATABASE_URL`: cadena de conexión a tu Postgres local (podés levantar uno rápido con Docker: `docker run --name pg-forja -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres`)
-- `MP_ACCESS_TOKEN` y `MP_PUBLIC_KEY`: las credenciales de **Test** que sacás en https://www.mercadopago.com.ar/developers/panel
-- `JWT_SECRET`: cualquier string largo y random
+Instalar dependencias:
 
-## 2. Inicializar la base de datos
+```bash
+npm install
+```
+
+Crear el archivo `.env` utilizando `.env.example`.
+
+Inicializar la base de datos:
 
 ```bash
 npm run db:init
 ```
 
-Esto crea las tablas y carga categorías + productos de ejemplo (Whey, Isolate, Creatina, Pre-entreno, BCAA, Multivitamínico). Editá `backend/db/schema.sql` para cambiar el catálogo inicial, o insertá productos directamente contra la tabla `productos` una vez que el negocio esté andando.
+Iniciar el servidor:
 
-## 3. Correr en desarrollo
+```bash
+npm start
+```
+
+o en desarrollo:
 
 ```bash
 npm run dev
 ```
 
-Abrí http://localhost:3000
+---
 
-## 4. Probar el flujo de pago
+# Variables de entorno
 
-Con las credenciales de **Test**, Mercado Pago te deja pagar con tarjetas de prueba ficticias (las conseguís en su documentación oficial de "tarjetas de prueba"). Nunca uses tarjetas reales contra el ambiente de test.
+El proyecto requiere:
 
-## 5. Deploy en Render o Railway
+```env
+DATABASE_URL=
 
-1. Subí este proyecto a un repo de GitHub.
-2. En Render/Railway: creá un servicio de **PostgreSQL** primero (te da un `DATABASE_URL` automáticamente).
-3. Creá el servicio web apuntando a este repo:
-   - **Build command:** `npm install`
-   - **Start command:** `npm start`
-4. Variables de entorno a configurar en el panel del servicio:
-   - `DATABASE_URL` (la que te dio el Postgres administrado)
-   - `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY` (usá las de **producción** cuando estés listo para cobrar de verdad)
-   - `JWT_SECRET`
-   - `FRONTEND_URL` → la URL pública que te asigna Render/Railway (ej. `https://forja.onrender.com`)
-   - `NODE_ENV=production`
-5. Una vez desplegado, corré la inicialización de la base contra la DB de producción:
-   ```bash
-   DATABASE_URL="la-url-de-produccion" npm run db:init
-   ```
-6. En el panel de Mercado Pago, configurá la **notification_url** (webhook) apuntando a `https://tu-dominio/api/pagos/webhook` — esto ya se envía automáticamente en cada preferencia creada, pero conviene verificarlo en el panel también.
+JWT_SECRET=
 
-## Notas de seguridad importantes
+MP_ACCESS_TOKEN=
 
-- **Nunca** se manejan números de tarjeta en este código: todo pasa por el Checkout de Mercado Pago, así evitamos la certificación PCI-DSS que exige manipular datos de tarjetas directamente.
-- El `MP_ACCESS_TOKEN` es secreto y solo vive en el backend. El `MP_PUBLIC_KEY` es el único dato de Mercado Pago que es seguro exponer al frontend (se sirve vía `/api/config`).
-- Las contraseñas se guardan con hash (`bcryptjs`), nunca en texto plano.
-- El carrito de invitado se identifica con una cookie `httpOnly` (no accesible desde JS), así se reduce el riesgo de robo de sesión.
+MP_PUBLIC_KEY=
+```
 
-## Próximos pasos sugeridos
+---
 
-- Panel de administración simple para cargar/editar productos sin tocar SQL a mano.
-- Página de detalle de producto individual (`/producto/:slug`).
-- Envío de emails de confirmación de compra (ej. con Resend o SendGrid).
-- Migrar el catálogo de ejemplo por tus productos e imágenes reales.
+# Estado actual del proyecto
+
+## Implementado
+
+- Backend REST
+- PostgreSQL
+- CRUD de productos
+- Panel de administración
+- Carrito persistente
+- Login
+- Registro
+- Mercado Pago
+- Categorías
+- Marcas
+- API completa
+
+---
+
+# Próximas mejoras
+
+- Historial de compras.
+- Panel de administración más avanzado.
+- Dashboard con gráficos.
+- Gestión de pedidos.
+- Gestión de clientes.
+- Recuperación de contraseña.
+- Carga de imágenes desde el administrador.
+- Responsive para dispositivos móviles.
+- Deploy en Render.
+
+---
+
+# Autor
+
+Desarrollado por **Máximo Conte**.
+
+Proyecto realizado con fines educativos y como portfolio de desarrollo web Full Stack.
