@@ -7,13 +7,18 @@
   <title>KRATOS — Suplementos deportivos</title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="stylesheet" href="/css/modal-producto.css">
+  <link rel="icon" type="image/png" href="/img/logo-kratos.png">
 </head>
 
 <body>
 
   <header class="header">
     <div class="header__top">
-      <a href="/" class="logo">KRATOS<span>.</span></a>
+      <a href="/" class="header-logo">
+
+        <img src="/img/logo-kratos2.png" alt="Kratos" class="header-logo__imagen-completa">
+
+      </a>
       <form id="form-busqueda" class="search-bar">
         <input id="input-busqueda" type="search" placeholder="Buscar creatina, whey, pre-entreno...">
         <button type="submit" aria-label="Buscar">🔍</button>
@@ -29,43 +34,76 @@
   </header>
 
   <section class="hero">
-    <div>
+    <div class="hero__contenido">
       <span class="hero__eyebrow">RENDIMIENTO MEDIBLE</span>
-      <h1>Cada dosis, certificada.</h1>
-      <p>Whey, creatina, pre-entrenos y aminoácidos con el dato real en la etiqueta. Sin relleno, sin promesas vacías.
+
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        Suplementación premium · resultados reales
+      </div>
+
+      <h1>Cada dosis, <span>certificada</span>.</h1>
+
+      <p>
+        Proteínas, creatina, colágenos, pre-entrenos y más.
+        Productos seleccionados para rendir mejor, recuperarte mejor
+        y entrenar con datos reales, no con promesas vacías.
       </p>
+
       <div class="hero__ctas">
         <a href="#grid-productos" class="hero__cta-primaria">Ver catálogo</a>
-        <a href="/?categoria=proteinas" class="hero__cta-secundaria">Proteínas</a>
+        <a href="/?categoria=proteinas" class="hero__cta-secundaria">Explorar proteínas</a>
+      </div>
+
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <strong>+9</strong>
+          <span>Productos activos</span>
+        </div>
+
+        <div class="hero__stat">
+          <strong>100%</strong>
+          <span>Calidad seleccionada</span>
+        </div>
+
+        <div class="hero__stat">
+          <strong>24/7</strong>
+          <span>Tienda online</span>
+        </div>
+      </div>
+
+      <div class="hero__trust">
+        <span>✔ Compra segura</span>
+        <span>✔ Pago con Mercado Pago</span>
+        <span>✔ Stock actualizado</span>
       </div>
     </div>
-    <div class="hero__3d">
 
+    <div class="hero__3d">
+      <div class="hero__3d-bg"></div>
       <div class="producto-glow"></div>
 
-      <div class="producto-flotacion">
+      <div class="hero__panel-producto">
+        <img id="productoImagen3D" class="producto-flotante" src="/img/creatina.png" alt="Producto destacado">
 
-        <img id="productoImagen3D" class="producto-flotante" src="/img/creatina.png">
+        <div class="producto-info">
+          <span>KRATOS PERFORMANCE</span>
 
+          <h3 id="productoNombre3D">
+            Creatina Monohidratada
+          </h3>
+
+          <p id="productoDescripcion3D">
+            100% pura · 5g por dosis
+          </p>
+
+          <div class="hero__mini-tags">
+            <span>Pureza</span>
+            <span>Rendimiento</span>
+            <span>Recuperación</span>
+          </div>
+        </div>
       </div>
-
-      <div class="producto-info">
-
-        <span>
-          KRATOS PERFORMANCE
-        </span>
-
-        <h3 id="productoNombre3D">
-          Creatina Monohidratada
-        </h3>
-
-        <p id="productoDescripcion3D">
-          100% pura · 5g por dosis
-        </p>
-
-      </div>
-
-
     </div>
   </section>
 
