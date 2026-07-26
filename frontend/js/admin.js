@@ -43,17 +43,47 @@ async function cargarProductos() {
 
     try {
 
-        const respuesta = await fetch("/api/admin/productos");
+        const respuesta = await fetch(
+            "/api/admin/productos",
+            {
+                credentials: "include"
+            }
+        );
 
-        todosLosProductos = await respuesta.json();
+        if (respuesta.status === 401) {
+
+            window
+                .manejarSesionAdminVencida
+                ?.();
+
+            return;
+
+        }
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                "No se pudieron cargar los productos."
+            );
+
+        }
+
+        todosLosProductos =
+            await respuesta.json();
 
         actualizarEstadisticas();
 
         mostrarProductos();
 
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            "Error cargando productos:",
+            error
+        );
+
     }
+
 }
 
 /* ============================
@@ -263,8 +293,20 @@ async function editarProducto(evento) {
 
 }
 
-async function mostrarFormularioEditar(producto) {
+function cancelarFormulario() {
 
+    const confirmar = confirm(
+        "¿Querés cancelar? Los cambios no guardados se perderán."
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    formEditar.innerHTML = "";
+}
+
+async function mostrarFormularioEditar(producto) {
 
     const categorias = await (
         await fetch("/api/categorias")
@@ -280,24 +322,23 @@ async function mostrarFormularioEditar(producto) {
 
     <label>Nombre:</label>
 
-    <input id="editNombre" value="${producto.nombre}">
+    <input
+    id="editNombre"
+    value="${producto.nombre}"
+    >
 
     <label>Marca:</label>
 
     <select id="editMarca">
 
-        ${marcas.map(marca =>
-
-        `
-            <option value="${marca.id}"
-            ${marca.id == producto.marca_id ? "selected" : ""}>
+        ${marcas.map(marca => `
+            <option
+                value="${marca.id}"
+                ${marca.id == producto.marca_id ? "selected" : ""}
+            >
                 ${marca.nombre}
             </option>
-            `
-
-    ).join("")
-        }
-
+        `).join("")}
 
     </select>
 
@@ -305,74 +346,89 @@ async function mostrarFormularioEditar(producto) {
 
     <select id="editCategoria">
 
-        ${categorias.map(categoria =>
-
-            `
-            <option value="${categoria.id}"
-            ${categoria.id == producto.categoria_id ? "selected" : ""}>
+        ${categorias.map(categoria => `
+            <option
+                value="${categoria.id}"
+                ${categoria.id == producto.categoria_id ? "selected" : ""}
+            >
                 ${categoria.nombre}
             </option>
-            `
-        ).join("")
-        }
+        `).join("")}
 
     </select>
 
     <label>Precio:</label>
 
-    <input 
-    id="editPrecio"
-    type="number"
-    value="${producto.precio}">
+    <input
+        id="editPrecio"
+        type="number"
+        value="${producto.precio}"
+    >
 
     <label>Stock:</label>
 
-    <input 
-    id="editStock"
-    type="number"
-    value="${producto.stock}">
+    <input
+        id="editStock"
+        type="number"
+        value="${producto.stock}"
+    >
 
     <label>Peso:</label>
 
     <input
-    id="editPeso"
-    type="number"
-    value="${producto.peso_gramos || ""}">
+        id="editPeso"
+        type="number"
+        value="${producto.peso_gramos || ""}"
+    >
 
     <label>Sabor:</label>
 
     <input
-    id="editSabor"
-    value="${producto.sabor || ""}">
+        id="editSabor"
+        value="${producto.sabor || ""}"
+    >
 
     <label>Descripción:</label>
 
-    <textarea id="editDescripcion">
-    ${producto.descripcion || ""}
-    </textarea>
+    <textarea id="editDescripcion">${producto.descripcion || ""}</textarea>
 
     <label>Imagen URL:</label>
 
     <input
-    id="editImagen"
-    value="${producto.imagen_url || ""}">
+        id="editImagen"
+        value="${producto.imagen_url || ""}"
+    >
 
     <label>
 
-    <input
-    id="editActivo"
-    type="checkbox"
-    ${producto.activo ? "checked" : ""}>
+        <input
+            id="editActivo"
+            type="checkbox"
+            ${producto.activo ? "checked" : ""}
+        >
 
-    Publicar producto
+        Publicar producto
 
     </label>
 
-    <button id="btnGuardarEditar">
+    <div class="acciones-formulario">
 
-        Guardar cambios
+        <button
+            id="btnGuardarEditar"
+            type="button"
+        >
+            Guardar cambios
+        </button>
 
-    </button>
+        <button
+            id="btnCancelarFormulario"
+            type="button"
+            class="btn-cancelar"
+        >
+            Cancelar
+        </button>
+
+    </div>
     `;
 
     document
@@ -380,6 +436,13 @@ async function mostrarFormularioEditar(producto) {
         .addEventListener(
             "click",
             () => guardarCambios(producto.id)
+        );
+
+    document
+        .getElementById("btnCancelarFormulario")
+        .addEventListener(
+            "click",
+            cancelarFormulario
         );
 }
 
@@ -457,116 +520,113 @@ async function mostrarFormularioNuevo() {
     const categorias =
         await (await fetch("/api/categorias")).json();
 
-
     const marcas =
         await (await fetch("/api/marcas")).json();
 
-
-
     formEditar.innerHTML = `
 
+        <h2>Agregar producto</h2>
 
-<h2>Agregar producto</h2>
+        <label>Nombre:</label>
 
+        <input
+            id="nuevoNombre"
+            type="text"
+        >
 
-<label>Nombre:</label>
-<input id="nuevoNombre">
+        <label>Marca:</label>
 
+        <select id="nuevaMarca">
 
-<label>Marca:</label>
+            ${marcas.map(marca => `
+                <option value="${marca.id}">
+                    ${marca.nombre}
+                </option>
+            `).join("")}
 
-<select id="nuevaMarca">
+        </select>
 
-${marcas.map(marca =>
+        <label>Categoría:</label>
 
-        `
-<option value="${marca.id}">
-${marca.nombre}
-</option>
-`
+        <select id="nuevaCategoria">
 
-    ).join("")}
+            ${categorias.map(categoria => `
+                <option value="${categoria.id}">
+                    ${categoria.nombre}
+                </option>
+            `).join("")}
 
-</select>
+        </select>
 
+        <label>Precio:</label>
 
+        <input
+            id="nuevoPrecio"
+            type="number"
+        >
 
+        <label>Stock:</label>
 
-<label>Categoría:</label>
+        <input
+            id="nuevoStock"
+            type="number"
+        >
 
-<select id="nuevaCategoria">
+        <label>Peso:</label>
 
-${categorias.map(categoria =>
+        <input
+            id="nuevoPeso"
+            type="number"
+        >
 
-        `
-<option value="${categoria.id}">
-${categoria.nombre}
-</option>
-`
+        <label>Sabor:</label>
 
-    ).join("")}
+        <input
+            id="nuevoSabor"
+            type="text"
+        >
 
-</select>
+        <label>Descripción:</label>
 
+        <textarea id="nuevaDescripcion"></textarea>
 
+        <label>Imagen URL:</label>
 
-<label>Precio:</label>
+        <input
+            id="nuevaImagen"
+            type="text"
+        >
 
-<input id="nuevoPrecio" type="number">
+        <label>
 
+            <input
+                id="nuevoActivo"
+                type="checkbox"
+            >
 
+            Publicar producto
 
-<label>Stock:</label>
+        </label>
 
-<input id="nuevoStock" type="number">
+        <div class="acciones-formulario">
 
+            <button
+                id="btnGuardarNuevo"
+                type="button"
+            >
+                Guardar producto
+            </button>
 
+            <button
+                id="btnCancelarNuevo"
+                type="button"
+                class="btn-cancelar"
+            >
+                Cancelar
+            </button>
 
-<label>Peso:</label>
-
-<input id="nuevoPeso" type="number">
-
-
-
-<label>Sabor:</label>
-
-<input id="nuevoSabor">
-
-
-
-<label>Descripción:</label>
-
-<textarea id="nuevaDescripcion"></textarea>
-
-
-
-<label>Imagen URL:</label>
-
-<input id="nuevaImagen">
-
-
-
-<label>
-
-<input id="nuevoActivo" type="checkbox">
-
-Publicar producto
-
-</label>
-
-
-
-
-<button id="btnGuardarNuevo">
-
-Guardar producto
-
-</button>
-
-
-`;
-
-
+        </div>
+    `;
 
     document
         .getElementById("btnGuardarNuevo")
@@ -575,7 +635,12 @@ Guardar producto
             agregarProducto
         );
 
-
+    document
+        .getElementById("btnCancelarNuevo")
+        .addEventListener(
+            "click",
+            cancelarFormulario
+        );
 }
 
 

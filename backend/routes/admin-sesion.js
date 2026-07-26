@@ -1,75 +1,137 @@
 const express = require("express");
+
+const {
+    ADMIN_COOKIE_NAME,
+    crearTokenAdmin,
+    tokenAdminValido
+} = require("../middleware/admin-auth");
+
 const router = express.Router();
 
+/* =========================================
+   LOGIN ADMIN
+   POST /api/admin-sesion/login
+========================================= */
 
-// Login admin
 router.post("/login", (req, res) => {
 
-    const { usuario, password } = req.body;
+    const usuario = String(
+        req.body.usuario || ""
+    ).trim();
 
-    // Por ahora usamos credenciales simples
-    // Después podemos pasarlo a base de datos
+    const password = String(
+        req.body.password || ""
+    );
+
+    if (!usuario || !password) {
+        return res.status(400).json({
+            ok: false,
+            mensaje:
+                "Usuario y contraseña son obligatorios."
+        });
+    }
+
+    const usuarioCorrecto =
+        usuario === process.env.ADMIN_USER;
+
+    const passwordCorrecto =
+        password === process.env.ADMIN_PASSWORD;
 
     if (
-        usuario === process.env.ADMIN_USER &&
-        password === process.env.ADMIN_PASSWORD
+        !usuarioCorrecto ||
+        !passwordCorrecto
     ) {
+        return res.status(401).json({
+            ok: false,
+            mensaje:
+                "Usuario o contraseña incorrectos."
+        });
+    }
 
-        res.cookie(
-            "admin_token",
-            "admin-auth-ok",
+    const token = crearTokenAdmin();
+
+    res.cookie(
+        ADMIN_COOKIE_NAME,
+        token,
+        {
+            httpOnly: true,
+            sameSite: "lax",
+
+            secure:
+                process.env.NODE_ENV ===
+                "production",
+
+            maxAge:
+                1000 * 60 * 60 * 8,
+
+            path: "/"
+        }
+    );
+
+    return res.json({
+        ok: true,
+        mensaje: "Login correcto."
+    });
+});
+
+/* =========================================
+   VER SESIÓN ACTUAL
+   GET /api/admin-sesion/sesion
+========================================= */
+
+router.get("/sesion", (req, res) => {
+
+    const token =
+        req.cookies?.[ADMIN_COOKIE_NAME];
+
+    const logueado =
+        tokenAdminValido(token);
+
+    if (!logueado && token) {
+        res.clearCookie(
+            ADMIN_COOKIE_NAME,
             {
                 httpOnly: true,
-                sameSite: "lax"
+                sameSite: "lax",
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                path: "/"
             }
         );
-
-        return res.json({
-            ok: true,
-            mensaje: "Login correcto"
-        });
-
     }
 
-    return res.status(401).json({
-        ok:false,
-        mensaje:"Usuario o contraseña incorrectos"
+    return res.json({
+        logueado
     });
-
 });
 
+/* =========================================
+   LOGOUT ADMIN
+   POST /api/admin-sesion/logout
+========================================= */
 
-// Ver sesión actual
-router.get("/sesion", (req,res)=>{
+router.post("/logout", (req, res) => {
 
-    const token = req.cookies.admin_token;
+    res.clearCookie(
+        ADMIN_COOKIE_NAME,
+        {
+            httpOnly: true,
+            sameSite: "lax",
 
-    if(token === "admin-auth-ok"){
+            secure:
+                process.env.NODE_ENV ===
+                "production",
 
-        return res.json({
-            logueado:true
-        });
+            path: "/"
+        }
+    );
 
-    }
-
-    res.json({
-        logueado:false
+    return res.json({
+        ok: true
     });
-
-});
-
-// Logout
-router.post("/logout",(req,res)=>{
-
-    res.clearCookie("admin_token", {
-        httpOnly: true,
-        sameSite: "lax"
-    });
-
-    res.json({
-        ok:true
-    });
-
 });
 
 module.exports = router;

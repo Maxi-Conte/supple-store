@@ -1,97 +1,695 @@
--- ==========================================
--- Schema de la tienda de suplementos
--- ==========================================
+--
+-- PostgreSQL database dump
+--
 
-CREATE TABLE IF NOT EXISTS categorias (
-  id SERIAL PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
-  slug VARCHAR(100) UNIQUE NOT NULL,
-  orden INTEGER DEFAULT 0
+\restrict zK3uvJRbTaNWmaKWBGsXMhR5q4edCB7BSb7euwEp2Y15mGI1cwB6WFDl7gGhG9U
+
+-- Dumped from database version 18.4
+-- Dumped by pg_dump version 18.4
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: carrito_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.carrito_items (
+    id integer NOT NULL,
+    carrito_id integer NOT NULL,
+    producto_id integer NOT NULL,
+    cantidad integer NOT NULL,
+    variante_id integer NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS productos (
-  id SERIAL PRIMARY KEY,
-  categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL,
-  nombre VARCHAR(200) NOT NULL,
-  slug VARCHAR(200) UNIQUE NOT NULL,
-  descripcion TEXT,
-  precio NUMERIC(10,2) NOT NULL,
-  stock INTEGER NOT NULL DEFAULT 0,
-  imagen_url VARCHAR(500),
-  -- Datos de la "etiqueta" que se muestra en la card (sello estilo certificado de análisis)
-  dato_destacado VARCHAR(50),   -- ej: "24g PROT" o "5g" (creatina monohidrato)
-  sabor VARCHAR(100),
-  activo BOOLEAN DEFAULT true,
-  creado_en TIMESTAMP DEFAULT NOW()
+
+ALTER TABLE public.carrito_items OWNER TO postgres;
+
+--
+-- Name: carrito_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.carrito_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.carrito_items_id_seq OWNER TO postgres;
+
+--
+-- Name: carrito_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.carrito_items_id_seq OWNED BY public.carrito_items.id;
+
+
+--
+-- Name: carritos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.carritos (
+    id integer NOT NULL,
+    usuario_id integer,
+    creado_en timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    session_token character varying(255)
 );
 
-CREATE TABLE IF NOT EXISTS usuarios (
-  id SERIAL PRIMARY KEY,
-  nombre VARCHAR(150) NOT NULL,
-  email VARCHAR(200) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  telefono VARCHAR(50),
-  creado_en TIMESTAMP DEFAULT NOW()
+
+ALTER TABLE public.carritos OWNER TO postgres;
+
+--
+-- Name: carritos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.carritos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.carritos_id_seq OWNER TO postgres;
+
+--
+-- Name: carritos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.carritos_id_seq OWNED BY public.carritos.id;
+
+
+--
+-- Name: categorias; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.categorias (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL,
+    slug character varying(100) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    orden integer DEFAULT 0
 );
 
--- El carrito puede pertenecer a un usuario logueado O a un invitado (identificado por cookie/uuid)
-CREATE TABLE IF NOT EXISTS carritos (
-  id SERIAL PRIMARY KEY,
-  usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
-  session_token VARCHAR(100) UNIQUE, -- usado cuando es invitado
-  creado_en TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT chk_carrito_dueno CHECK (usuario_id IS NOT NULL OR session_token IS NOT NULL)
+
+ALTER TABLE public.categorias OWNER TO postgres;
+
+--
+-- Name: categorias_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.categorias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.categorias_id_seq OWNER TO postgres;
+
+--
+-- Name: categorias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.categorias_id_seq OWNED BY public.categorias.id;
+
+
+--
+-- Name: marcas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marcas (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL,
+    slug character varying(100) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS carrito_items (
-  id SERIAL PRIMARY KEY,
-  carrito_id INTEGER REFERENCES carritos(id) ON DELETE CASCADE,
-  producto_id INTEGER REFERENCES productos(id) ON DELETE CASCADE,
-  cantidad INTEGER NOT NULL DEFAULT 1,
-  UNIQUE(carrito_id, producto_id)
+
+ALTER TABLE public.marcas OWNER TO postgres;
+
+--
+-- Name: marcas_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.marcas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.marcas_id_seq OWNER TO postgres;
+
+--
+-- Name: marcas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.marcas_id_seq OWNED BY public.marcas.id;
+
+
+--
+-- Name: orden_items; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.orden_items (
+    id integer NOT NULL,
+    orden_id integer NOT NULL,
+    producto_id integer,
+    nombre_producto character varying(255) NOT NULL,
+    precio_unitario numeric(12,2) NOT NULL,
+    cantidad integer NOT NULL,
+    variante_id integer,
+    sabor character varying(120),
+    peso_gramos integer,
+    CONSTRAINT orden_items_cantidad_check CHECK ((cantidad > 0)),
+    CONSTRAINT orden_items_precio_unitario_check CHECK ((precio_unitario >= (0)::numeric))
 );
 
-CREATE TABLE IF NOT EXISTS ordenes (
-  id SERIAL PRIMARY KEY,
-  usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
-  email_comprador VARCHAR(200),
-  total NUMERIC(10,2) NOT NULL,
-  estado VARCHAR(30) DEFAULT 'pendiente', -- pendiente | pagado | rechazado | cancelado
-  mp_preference_id VARCHAR(100),
-  mp_payment_id VARCHAR(100),
-  creado_en TIMESTAMP DEFAULT NOW()
+
+ALTER TABLE public.orden_items OWNER TO postgres;
+
+--
+-- Name: orden_items_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.orden_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.orden_items_id_seq OWNER TO postgres;
+
+--
+-- Name: orden_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.orden_items_id_seq OWNED BY public.orden_items.id;
+
+
+--
+-- Name: ordenes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ordenes (
+    id integer NOT NULL,
+    usuario_id integer,
+    email_comprador character varying(255),
+    total numeric(12,2) NOT NULL,
+    estado character varying(20) DEFAULT 'pendiente'::character varying NOT NULL,
+    mp_preference_id character varying(255),
+    mp_payment_id character varying(255),
+    creado_en timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ordenes_estado_check CHECK (((estado)::text = ANY ((ARRAY['pendiente'::character varying, 'pagado'::character varying, 'rechazado'::character varying])::text[]))),
+    CONSTRAINT ordenes_total_check CHECK ((total >= (0)::numeric))
 );
 
-CREATE TABLE IF NOT EXISTS orden_items (
-  id SERIAL PRIMARY KEY,
-  orden_id INTEGER REFERENCES ordenes(id) ON DELETE CASCADE,
-  producto_id INTEGER REFERENCES productos(id),
-  nombre_producto VARCHAR(200), -- copia histórica por si el producto cambia despues
-  precio_unitario NUMERIC(10,2) NOT NULL,
-  cantidad INTEGER NOT NULL
+
+ALTER TABLE public.ordenes OWNER TO postgres;
+
+--
+-- Name: ordenes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.ordenes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.ordenes_id_seq OWNER TO postgres;
+
+--
+-- Name: ordenes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.ordenes_id_seq OWNED BY public.ordenes.id;
+
+
+--
+-- Name: producto_variantes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.producto_variantes (
+    id integer NOT NULL,
+    producto_id integer NOT NULL,
+    sabor character varying(120),
+    peso_gramos integer,
+    precio numeric(12,2) NOT NULL,
+    stock integer DEFAULT 0 NOT NULL,
+    sku character varying(100),
+    activo boolean DEFAULT true NOT NULL,
+    creado_en timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT producto_variantes_peso_gramos_check CHECK (((peso_gramos IS NULL) OR (peso_gramos > 0))),
+    CONSTRAINT producto_variantes_precio_check CHECK ((precio >= (0)::numeric)),
+    CONSTRAINT producto_variantes_stock_check CHECK ((stock >= 0))
 );
 
--- ==========================================
--- Datos iniciales de categorías
--- ==========================================
-INSERT INTO categorias (nombre, slug, orden) VALUES
-  ('Proteínas', 'proteinas', 1),
-  ('Creatina', 'creatina', 2),
-  ('Pre-entreno', 'pre-entreno', 3),
-  ('Aminoácidos', 'aminoacidos', 4),
-  ('Vitaminas', 'vitaminas', 5)
-ON CONFLICT (slug) DO NOTHING;
 
--- Productos de ejemplo (para que el catálogo no arranque vacío)
-INSERT INTO productos (categoria_id, nombre, slug, descripcion, precio, stock, dato_destacado, sabor, imagen_url)
-SELECT c.id, v.nombre, v.slug, v.descripcion, v.precio, v.stock, v.dato, v.sabor, v.img
-FROM (VALUES
-  ('proteinas', 'Whey Protein Concentrada 2lb', 'whey-protein-2lb', 'Proteína de suero concentrada, 24g de proteína por porción.', 18500.00, 40, '24g PROT', 'Chocolate', ''),
-  ('proteinas', 'Whey Protein Isolate 2lb', 'whey-isolate-2lb', 'Aislada de proteína, absorción rápida, bajo en grasas y lactosa.', 22900.00, 25, '27g PROT', 'Vainilla', ''),
-  ('creatina', 'Creatina Monohidratada 300g', 'creatina-mono-300g', 'Creatina monohidratada micronizada, 5g por dosis.', 12500.00, 60, '5g CREA', 'Neutro', ''),
-  ('pre-entreno', 'Pre-Entreno Explosive 300g', 'pre-explosive-300g', 'Fórmula con cafeína, citrulina y beta-alanina para máximo rendimiento.', 16800.00, 30, '200mg CAF', 'Frutos rojos', ''),
-  ('aminoacidos', 'BCAA 2:1:1 400g', 'bcaa-400g', 'Aminoácidos ramificados para recuperación muscular.', 14200.00, 35, '7g BCAA', 'Limonada', ''),
-  ('vitaminas', 'Multivitamínico Diario x60', 'multivitaminico-60', 'Complejo vitamínico completo para uso diario.', 9800.00, 50, '12 VIT', '-', '')
-) AS v(cat_slug, nombre, slug, descripcion, precio, stock, dato, sabor, img)
-JOIN categorias c ON c.slug = v.cat_slug
-ON CONFLICT (slug) DO NOTHING;
+ALTER TABLE public.producto_variantes OWNER TO postgres;
+
+--
+-- Name: producto_variantes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.producto_variantes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.producto_variantes_id_seq OWNER TO postgres;
+
+--
+-- Name: producto_variantes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.producto_variantes_id_seq OWNED BY public.producto_variantes.id;
+
+
+--
+-- Name: productos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.productos (
+    id integer NOT NULL,
+    categoria_id integer NOT NULL,
+    nombre character varying(200) NOT NULL,
+    slug character varying(200) NOT NULL,
+    precio numeric(10,2) NOT NULL,
+    stock integer DEFAULT 0,
+    dato_destacado character varying(100),
+    sabor character varying(100),
+    imagen_url text,
+    marca_id integer,
+    activo boolean DEFAULT true,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    descripcion text,
+    peso_gramos integer
+);
+
+
+ALTER TABLE public.productos OWNER TO postgres;
+
+--
+-- Name: productos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.productos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.productos_id_seq OWNER TO postgres;
+
+--
+-- Name: productos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.productos_id_seq OWNED BY public.productos.id;
+
+
+--
+-- Name: usuarios; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.usuarios (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL,
+    email character varying(150) NOT NULL,
+    password_hash text NOT NULL,
+    creado_en timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.usuarios OWNER TO postgres;
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.usuarios_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.usuarios_id_seq OWNER TO postgres;
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.usuarios_id_seq OWNED BY public.usuarios.id;
+
+
+--
+-- Name: carrito_items id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items ALTER COLUMN id SET DEFAULT nextval('public.carrito_items_id_seq'::regclass);
+
+
+--
+-- Name: carritos id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carritos ALTER COLUMN id SET DEFAULT nextval('public.carritos_id_seq'::regclass);
+
+
+--
+-- Name: categorias id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.categorias ALTER COLUMN id SET DEFAULT nextval('public.categorias_id_seq'::regclass);
+
+
+--
+-- Name: marcas id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marcas ALTER COLUMN id SET DEFAULT nextval('public.marcas_id_seq'::regclass);
+
+
+--
+-- Name: orden_items id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orden_items ALTER COLUMN id SET DEFAULT nextval('public.orden_items_id_seq'::regclass);
+
+
+--
+-- Name: ordenes id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ordenes ALTER COLUMN id SET DEFAULT nextval('public.ordenes_id_seq'::regclass);
+
+
+--
+-- Name: producto_variantes id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.producto_variantes ALTER COLUMN id SET DEFAULT nextval('public.producto_variantes_id_seq'::regclass);
+
+
+--
+-- Name: productos id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos ALTER COLUMN id SET DEFAULT nextval('public.productos_id_seq'::regclass);
+
+
+--
+-- Name: usuarios id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuarios ALTER COLUMN id SET DEFAULT nextval('public.usuarios_id_seq'::regclass);
+
+
+--
+-- Name: carrito_items carrito_items_carrito_variante_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items
+    ADD CONSTRAINT carrito_items_carrito_variante_unique UNIQUE (carrito_id, variante_id);
+
+
+--
+-- Name: carrito_items carrito_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items
+    ADD CONSTRAINT carrito_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: carritos carritos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carritos
+    ADD CONSTRAINT carritos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: categorias categorias_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.categorias
+    ADD CONSTRAINT categorias_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: categorias categorias_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.categorias
+    ADD CONSTRAINT categorias_slug_key UNIQUE (slug);
+
+
+--
+-- Name: marcas marcas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marcas
+    ADD CONSTRAINT marcas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: marcas marcas_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marcas
+    ADD CONSTRAINT marcas_slug_key UNIQUE (slug);
+
+
+--
+-- Name: orden_items orden_items_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orden_items
+    ADD CONSTRAINT orden_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ordenes ordenes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ordenes
+    ADD CONSTRAINT ordenes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: producto_variantes producto_variantes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.producto_variantes
+    ADD CONSTRAINT producto_variantes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: producto_variantes producto_variantes_sku_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.producto_variantes
+    ADD CONSTRAINT producto_variantes_sku_key UNIQUE (sku);
+
+
+--
+-- Name: productos productos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT productos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: productos productos_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT productos_slug_key UNIQUE (slug);
+
+
+--
+-- Name: usuarios usuarios_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_email_key UNIQUE (email);
+
+
+--
+-- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_orden_items_orden_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_orden_items_orden_id ON public.orden_items USING btree (orden_id);
+
+
+--
+-- Name: idx_ordenes_usuario_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_ordenes_usuario_id ON public.ordenes USING btree (usuario_id);
+
+
+--
+-- Name: idx_producto_variantes_activas; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_producto_variantes_activas ON public.producto_variantes USING btree (producto_id, activo);
+
+
+--
+-- Name: idx_producto_variantes_producto_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_producto_variantes_producto_id ON public.producto_variantes USING btree (producto_id);
+
+
+--
+-- Name: uq_producto_variantes_combinacion; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX uq_producto_variantes_combinacion ON public.producto_variantes USING btree (producto_id, COALESCE(lower(TRIM(BOTH FROM sabor)), ''::text), COALESCE(peso_gramos, 0));
+
+
+--
+-- Name: carrito_items carrito_items_carrito_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items
+    ADD CONSTRAINT carrito_items_carrito_id_fkey FOREIGN KEY (carrito_id) REFERENCES public.carritos(id);
+
+
+--
+-- Name: carrito_items carrito_items_producto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items
+    ADD CONSTRAINT carrito_items_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id);
+
+
+--
+-- Name: carrito_items carrito_items_variante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carrito_items
+    ADD CONSTRAINT carrito_items_variante_id_fkey FOREIGN KEY (variante_id) REFERENCES public.producto_variantes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: carritos carritos_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.carritos
+    ADD CONSTRAINT carritos_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: orden_items orden_items_orden_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orden_items
+    ADD CONSTRAINT orden_items_orden_id_fkey FOREIGN KEY (orden_id) REFERENCES public.ordenes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: orden_items orden_items_producto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orden_items
+    ADD CONSTRAINT orden_items_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id) ON DELETE SET NULL;
+
+
+--
+-- Name: orden_items orden_items_variante_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.orden_items
+    ADD CONSTRAINT orden_items_variante_id_fkey FOREIGN KEY (variante_id) REFERENCES public.producto_variantes(id) ON DELETE SET NULL;
+
+
+--
+-- Name: ordenes ordenes_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.ordenes
+    ADD CONSTRAINT ordenes_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE SET NULL;
+
+
+--
+-- Name: producto_variantes producto_variantes_producto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.producto_variantes
+    ADD CONSTRAINT producto_variantes_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: productos productos_categoria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT productos_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias(id);
+
+
+--
+-- Name: productos productos_marca_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT productos_marca_id_fkey FOREIGN KEY (marca_id) REFERENCES public.marcas(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict zK3uvJRbTaNWmaKWBGsXMhR5q4edCB7BSb7euwEp2Y15mGI1cwB6WFDl7gGhG9U
+

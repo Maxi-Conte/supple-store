@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KRATOS — Suplementos deportivos</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/modal-producto.css">
 </head>
 
 <body>
@@ -158,6 +159,139 @@
           <button id="detalle-agregar">
             Añadir al carrito
           </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =====================================
+     MODAL DE DETALLE DEL PRODUCTO
+====================================== -->
+
+  <div id="modal-detalle-producto" class="modal-detalle-producto" role="dialog" aria-modal="true"
+    aria-labelledby="detalle-producto-nombre" aria-hidden="true" hidden>
+
+    <div class="modal-detalle-producto__overlay"></div>
+
+    <div class="modal-detalle-producto__caja">
+
+      <!-- Botón cerrar -->
+      <button id="btn-cerrar-detalle" class="modal-detalle-producto__cerrar" type="button"
+        aria-label="Cerrar detalle del producto">
+        &times;
+      </button>
+
+      <div class="detalle-producto">
+
+        <!-- LADO IZQUIERDO: imagen -->
+        <div class="detalle-producto__media">
+
+          <div class="detalle-producto__imagen-contenedor">
+
+            <img id="detalle-producto-imagen" class="detalle-producto__imagen" src="" alt="">
+
+            <div id="detalle-producto-sin-imagen" class="detalle-producto__sin-imagen">
+              📦
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- LADO DERECHO: información -->
+        <div class="detalle-producto__informacion">
+
+          <span id="detalle-producto-categoria" class="detalle-producto__categoria">
+            Categoría
+          </span>
+
+          <h2 id="detalle-producto-nombre" class="detalle-producto__nombre">
+            Nombre del producto
+          </h2>
+
+          <p id="detalle-producto-descripcion" class="detalle-producto__descripcion">
+            Descripción del producto.
+          </p>
+
+          <div id="detalle-producto-precio" class="detalle-producto__precio">
+            $0
+          </div>
+
+          <!-- Selector de sabor -->
+          <div id="grupo-detalle-sabor" class="detalle-producto__grupo">
+
+            <label for="detalle-producto-sabor">
+              Sabor
+            </label>
+
+            <select id="detalle-producto-sabor">
+              <option value="">
+                Seleccionar sabor
+              </option>
+            </select>
+
+          </div>
+
+          <!-- Selector de peso -->
+          <div id="grupo-detalle-peso" class="detalle-producto__grupo">
+
+            <span class="detalle-producto__etiqueta">
+              Peso
+            </span>
+
+            <div id="detalle-producto-pesos" class="detalle-producto__opciones-peso">
+              <!-- Los botones de peso se crearán desde JavaScript -->
+            </div>
+
+          </div>
+
+          <!-- Cantidad -->
+          <div class="detalle-producto__grupo">
+
+            <span class="detalle-producto__etiqueta">
+              Cantidad
+            </span>
+
+            <div class="detalle-producto__cantidad">
+
+              <button id="btn-detalle-restar" type="button" aria-label="Restar una unidad">
+                −
+              </button>
+
+              <span id="detalle-producto-cantidad">
+                1
+              </span>
+
+              <button id="btn-detalle-sumar" type="button" aria-label="Agregar una unidad">
+                +
+              </button>
+
+            </div>
+
+            <p class="detalle-producto__stock">
+              Stock disponible:
+              <strong id="detalle-producto-stock">0</strong>
+            </p>
+
+          </div>
+
+          <!-- Botón carrito -->
+          <button id="btn-detalle-agregar" class="detalle-producto__agregar" type="button">
+            Agregar al carrito
+          </button>
+
+          <!-- Información de confianza -->
+          <div class="detalle-producto__beneficios">
+
+            <span>🚚 Envíos disponibles</span>
+            <span>🔒 Pago seguro</span>
+            <span>📦 Stock actualizado</span>
+
+          </div>
 
         </div>
 
