@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin | Kratos</title>
+
+    <link rel="stylesheet" href="/css/admin.css">
+
+</head>
+
+<body>
+
+    <!-- Pantalla de login -->
+    <div id="pantalla-login" class="admin-login">
+
+
+        <div class="login-card">
+
+
+            <div class="glow-blob blob-1"></div>
+            <div class="glow-blob blob-2"></div>
+
+            <div class="dark-overlay"></div>
+
+
+            <div class="login-content">
+
+
+                <div class="login-logo">
+
+                    <img src="/img/logo-kratos.png.png" alt="Kratos">
+
+                </div>
+
+
+
+                <h1>
+                    Panel administrativo
+                </h1>
+
+
+                <p>
+                    Acceso exclusivo para administradores
+                </p>
+
+
+
+                <div id="login-error" class="modal__error"></div>
+
+
+
+                <form id="form-login-admin">
+
+
+                    <div class="campo">
+
+                        <input id="admin-usuario" type="text" placeholder="Usuario" required>
+
+                    </div>
+
+
+
+                    <div class="campo">
+
+                        <input id="admin-password" type="password" placeholder="Contraseña" required>
+
+                    </div>
+
+
+
+                    <button type="submit">
+
+                        Ingresar
+
+                    </button>
+
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+    <!-- Panel (oculto hasta autenticarse) -->
+    <div id="pantalla-panel" style="display:none;">
+
+        <header class="admin-header">
+
+            <div class="admin-header__marca">
+                <div class="logo">
+                    Kratos<span>.</span>
+                </div>
+                <span class="admin-header__subtitulo">Panel administrativo</span>
+            </div>
+
+            <div class="admin-header__acciones">
+
+                <button id="btnLogout" class="btn-logout">
+                    Cerrar sesión
+                </button>
+
+                <a href="/" class="admin-header__volver">
+                    ← Volver a la tienda
+                </a>
+
+            </div>
+
+        </header>
+
+        <main class="admin-contenido">
+
+            <div class="admin-toolbar">
+                <h1 class="admin-toolbar__titulo">
+                    Gestión de productos
+                </h1>
+
+                <button id="btnNuevo" class="btn-principal">
+                    + Agregar producto
+                </button>
+
+            </div>
+
+            <div class="filtro-productos">
+
+                <label>
+                    Filtrar por categoría:
+                </label>
+
+                <select id="filtroCategoria">
+
+                    <option value="">
+                        Todas las categorías
+                    </option>
+
+                </select>
+
+            </div>
+
+            <section class="admin-estadisticas">
+
+                <div class="estadistica-card">
+
+                    <span>Total productos</span>
+
+                    <strong id="totalProductos">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="estadistica-card">
+
+                    <span>Activos</span>
+
+                    <strong id="productosActivos">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="estadistica-card">
+
+                    <span>Inactivos</span>
+
+                    <strong id="productosInactivos">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="estadistica-card">
+
+                    <span>Sin stock</span>
+
+                    <strong id="productosSinStock">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
+            <section id="formEditar" class="admin-formulario">
+
+            </section>
+
+            <h2 class="titulo-seccion">
+                Productos
+            </h2>
+
+            <section id="listaProductos" class="grid-productos-admin">
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="/js/login.js"></script>
+    <script src="/js/admin.js"></script>
+
+</body>
+
+</html>

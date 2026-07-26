@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRATOS — Suplementos deportivos</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header__top">
+      <a href="/" class="logo">KRATOS<span>.</span></a>
+      <form id="form-busqueda" class="search-bar">
+        <input id="input-busqueda" type="search" placeholder="Buscar creatina, whey, pre-entreno...">
+        <button type="submit" aria-label="Buscar">🔍</button>
+      </form>
+      <div class="header__actions">
+        <button id="btn-cuenta" class="icon-btn">Ingresar</button>
+        <button id="btn-abrir-carrito" class="icon-btn">
+          Carrito <span id="cart-count" class="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+    <nav id="categorias-nav" class="categorias-nav" aria-label="Categorías de productos"></nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <span class="hero__eyebrow">RENDIMIENTO MEDIBLE</span>
+      <h1>Cada dosis, certificada.</h1>
+      <p>Whey, creatina, pre-entrenos y aminoácidos con el dato real en la etiqueta. Sin relleno, sin promesas vacías.
+      </p>
+      <div class="hero__ctas">
+        <a href="#grid-productos" class="hero__cta-primaria">Ver catálogo</a>
+        <a href="/?categoria=proteinas" class="hero__cta-secundaria">Proteínas</a>
+      </div>
+    </div>
+    <div class="hero__3d">
+
+      <div class="producto-glow"></div>
+
+      <div class="producto-flotacion">
+
+        <img id="productoImagen3D" class="producto-flotante" src="/img/creatina.png">
+
+      </div>
+
+      <div class="producto-info">
+
+        <span>
+          KRATOS PERFORMANCE
+        </span>
+
+        <h3 id="productoNombre3D">
+          Creatina Monohidratada
+        </h3>
+
+        <p id="productoDescripcion3D">
+          100% pura · 5g por dosis
+        </p>
+
+      </div>
+
+
+    </div>
+  </section>
+
+  <main class="contenido">
+    <h2 id="titulo-seccion" class="seccion-titulo">Todo el catálogo</h2>
+    <div id="grid-productos" class="grid-productos"></div>
+  </main>
+
+  <!-- Drawer del carrito -->
+  <div id="overlay" class="overlay"></div>
+  <aside id="drawer-carrito" class="drawer" aria-label="Carrito de compras">
+    <div class="drawer__header">
+      <h2>Tu carrito</h2>
+      <button id="drawer-cerrar" class="drawer__cerrar" aria-label="Cerrar carrito">&times;</button>
+    </div>
+    <div id="drawer-items" class="drawer__items"></div>
+    <div class="drawer__footer">
+      <div class="drawer__total">
+        <span>Total</span>
+        <span id="drawer-total-valor">$0</span>
+      </div>
+      <button id="btn-checkout" class="btn-checkout" disabled>Pagar con Mercado Pago</button>
+    </div>
+  </aside>
+
+  <!-- Modal de login / registro -->
+  <div id="modal-auth" class="modal">
+    <div class="modal__caja">
+      <button id="modal-auth-cerrar" class="modal__cerrar" aria-label="Cerrar">&times;</button>
+      <h2 id="modal-auth-titulo">Ingresar</h2>
+      <div id="modal-auth-error" class="modal__error"></div>
+      <form id="form-auth">
+        <div id="campo-nombre" class="campo" style="display:none;">
+          <label for="campo-nombre-input">Nombre</label>
+          <input id="campo-nombre-input" type="text" autocomplete="name">
+        </div>
+        <div class="campo">
+          <label for="campo-email">Email</label>
+          <input id="campo-email" type="email" required autocomplete="email">
+        </div>
+        <div class="campo">
+          <label for="campo-password">Contraseña</label>
+          <input id="campo-password" type="password" required autocomplete="current-password">
+        </div>
+        <button id="btn-auth-submit" type="submit" class="btn-primario">Ingresar</button>
+      </form>
+      <div class="modal__switch">
+        <button id="btn-switch-modo" type="button">¿No tenés cuenta? Registrate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal producto -->
+  <div id="modal-producto" class="modal-producto">
+
+    <div class="modal-producto__caja">
+
+      <button id="cerrar-producto" class="modal-producto__cerrar">
+        ×
+      </button>
+      <div class="producto-detalle">
+
+        <div class="producto-detalle__imagen">
+          <img id="detalle-imagen">
+        </div>
+
+        <div class="producto-detalle__info">
+          <span id="detalle-categoria"></span>
+          <h2 id="detalle-nombre"></h2>
+          <h3 id="detalle-precio"></h3>
+
+          <p id="detalle-descripcion">
+          </p>
+
+          <div class="selector">
+            <label>Tamaño:</label>
+            <div id="detalle-tamanos"></div>
+          </div>
+
+          <div class="cantidad">
+            <button id="menos">-</button>
+            <span id="cantidad">1</span>
+            <button id="mas">+</button>
+          </div>
+
+          <small>
+            Stock disponible:
+            <span id="detalle-stock"></span>
+          </small>
+
+          <button id="detalle-agregar">
+            Añadir al carrito
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer class="footer">
+
+    <div class="footer__contenedor">
+
+
+      <div class="footer__marca">
+
+        <h2>
+          KRATOS<span>.</span>
+        </h2>
+
+        <p>
+          Suplementación deportiva con datos reales.
+          Rendimiento sin excusas.
+        </p>
+
+      </div>
+
+
+
+      <div class="footer__links">
+
+        <h3>
+          Navegación
+        </h3>
+
+        <a href="/">
+          Inicio
+        </a>
+
+        <a href="#grid-productos">
+          Productos
+        </a>
+
+        <a href="#">
+          Preguntas frecuentes
+        </a>
+
+      </div>
+
+
+
+      <div class="footer__contacto">
+
+        <h3>
+          Contacto
+        </h3>
+
+
+        <p>
+          📍 Mendoza, Argentina
+        </p>
+
+        <p>
+          📧 contacto@kratos.com
+        </p>
+
+        <p>
+          📱 +54 9 261 715 7978
+        </p>
+
+
+      </div>
+
+
+
+      <div class="footer__redes">
+
+
+        <h3>
+          Seguinos
+        </h3>
+
+
+
+        <div class="social-grid">
+
+
+          <a class="social-card instagram">
+
+            <span>
+              ◎
+            </span>
+
+          </a>
+
+
+
+          <a class="social-card whatsapp">
+
+            <span>
+              ☎
+            </span>
+
+          </a>
+
+
+
+          <a class="social-card tiktok">
+
+            <span>
+              ♪
+            </span>
+
+          </a>
+
+
+        </div>
+
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <div class="footer__bottom">
+
+      © 2026 KRATOS PERFORMANCE. Todos los derechos reservados.
+
+    </div>
+
+
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/productos.js"></script>
+  <script src="/js/carrito.js"></script>
+  <script src="/js/hero3d.js"></script>
+</body>
+
+</html>
