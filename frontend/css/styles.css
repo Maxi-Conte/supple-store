@@ -489,29 +489,51 @@ button {
 }
 
 /* =========================================
-   IMAGEN DEL PRODUCTO
+   MODELO 3D DEL PRODUCTO
 ========================================= */
 
-.producto-flotante {
+.hero-producto-3d {
   position: relative;
   z-index: 3;
 
+  width: min(380px, 100%);
+  height: 300px;
+
+  margin: -8px auto 0;
+
+  cursor: grab;
+  touch-action: none;
+
+  user-select: none;
+}
+
+.hero-producto-3d:active {
+  cursor: grabbing;
+}
+
+.hero-producto-3d canvas {
   display: block;
 
-  width: auto;
-  max-width: min(280px, 80%);
-  max-height: 285px;
+  width: 100%;
+  height: 100%;
 
-  object-fit: contain;
+  outline: none;
+}
 
-  filter:
-    drop-shadow(
-      0 28px 38px rgba(0, 0, 0, 0.7)
-    );
+@media (max-width: 980px) {
+  .hero-producto-3d {
+    width: min(380px, 100%);
+    height: 290px;
+  }
+}
 
-  animation:
-    flotarProducto 4s ease-in-out infinite,
-    inclinarProducto 6s ease-in-out infinite;
+@media (max-width: 600px) {
+  .hero-producto-3d {
+    width: min(310px, 100%);
+    height: 245px;
+
+    margin-top: 0;
+  }
 }
 
 /* =========================================

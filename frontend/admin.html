@@ -120,13 +120,29 @@
         <main class="admin-contenido">
 
             <div class="admin-toolbar">
+
                 <h1 class="admin-toolbar__titulo">
                     Gestión de productos
                 </h1>
 
-                <button id="btnNuevo" class="btn-principal">
-                    + Agregar producto
-                </button>
+                <div class="admin-toolbar__acciones">
+
+                    <button id="btnToggleCategorias" type="button" class="btn-categorias-toggle" aria-expanded="false"
+                        aria-controls="contenidoCategorias">
+                        <span>
+                            ⚙ Categorías
+                        </span>
+
+                        <span id="iconoToggleCategorias" class="btn-categorias-toggle__icono">
+                            +
+                        </span>
+                    </button>
+
+                    <button id="btnNuevo" type="button" class="btn-principal">
+                        + Agregar producto
+                    </button>
+
+                </div>
 
             </div>
 
@@ -193,6 +209,43 @@
 
             </section>
 
+            <!-- =========================================
+     GESTIÓN DE CATEGORÍAS
+========================================= -->
+
+            <section id="contenidoCategorias" class="admin-categorias-panel" hidden>
+
+                <div class="admin-categorias__encabezado">
+
+                    <div>
+                        <span class="admin-categorias__etiqueta">
+                            Organización del catálogo
+                        </span>
+
+                        <h2>
+                            Gestión de categorías
+                        </h2>
+
+                        <p>
+                            Creá, editá, activá o desactivá las categorías
+                            disponibles en la tienda.
+                        </p>
+                    </div>
+
+                    <button id="btnNuevaCategoria" type="button" class="btn-principal">
+                        + Agregar categoría
+                    </button>
+
+                </div>
+
+                <section id="formCategoria" class="admin-formulario admin-formulario--categoria">
+                </section>
+
+                <div id="listaCategorias" class="grid-categorias-admin">
+                </div>
+
+            </section>
+
             <section id="formEditar" class="admin-formulario">
 
             </section>
@@ -211,6 +264,7 @@
 
     <script src="/js/login.js"></script>
     <script src="/js/admin.js"></script>
+    <script src="/js/admin-categorias.js"></script>
 
 </body>
 

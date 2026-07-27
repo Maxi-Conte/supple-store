@@ -2,7 +2,7 @@ const express = require("express");
 const db = require("../db/database");
 
 const {
-    verificarAdmin
+  verificarAdmin
 } = require("../middleware/admin-auth");
 
 const router = express.Router();
@@ -227,7 +227,7 @@ async function sincronizarProductoLegacy(
 }
 
 /* ==================================================
-   CATEGORÍAS
+   CATEGORÍAS PÚBLICAS
    GET /api/categorias
 ================================================== */
 
@@ -237,11 +237,16 @@ router.get("/categorias", async (req, res) => {
       SELECT
         id,
         nombre,
-        slug
+        slug,
+        activo
 
       FROM categorias
 
-      ORDER BY orden ASC
+      WHERE activo = TRUE
+
+      ORDER BY
+        orden ASC,
+        nombre ASC
     `);
 
     res.json(resultado.rows);
@@ -381,6 +386,7 @@ router.get("/productos", async (req, res) => {
         ON pv.producto_id = p.id
 
       WHERE p.activo = TRUE
+       AND c.activo = TRUE
     `;
 
     const parametros = [];
@@ -511,6 +517,7 @@ router.get(
 
             WHERE p.slug = $1
               AND p.activo = TRUE
+              AND c.activo = TRUE
           `,
           [req.params.slug]
         );
@@ -671,22 +678,22 @@ router.get(
       const precioMinimo =
         preciosDisponibles.length
           ? Math.min(
-              ...preciosDisponibles
-            )
+            ...preciosDisponibles
+          )
           : Number(
-              variantePredeterminada
-                .precio
-            ) || 0;
+            variantePredeterminada
+              .precio
+          ) || 0;
 
       const precioMaximo =
         preciosDisponibles.length
           ? Math.max(
-              ...preciosDisponibles
-            )
+            ...preciosDisponibles
+          )
           : Number(
-              variantePredeterminada
-                .precio
-            ) || 0;
+            variantePredeterminada
+              .precio
+          ) || 0;
 
       delete producto.precio_anterior;
       delete producto.stock_anterior;
@@ -752,13 +759,376 @@ router.get(
 ================================================== */
 
 router.use(
-    "/admin/productos",
-    verificarAdmin
+  "/admin/productos",
+  verificarAdmin
 );
 
 router.use(
-    "/admin/variantes",
-    verificarAdmin
+  "/admin/variantes",
+  verificarAdmin
+);
+
+router.use(
+  "/admin/categorias",
+  verificarAdmin
+);
+
+/* ==================================================
+   ADMIN - LISTAR TODAS LAS CATEGORÍAS
+   GET /api/admin/categorias
+================================================== */
+
+router.get(
+  "/admin/categorias",
+  async (req, res) => {
+    try {
+      const resultado = await db.query(`
+        SELECT
+          c.id,
+          c.nombre,
+          c.slug,
+          c.activo,
+          c.orden,
+
+          COUNT(p.id)::INTEGER
+            AS cantidad_productos
+
+        FROM categorias c
+
+        LEFT JOIN productos p
+          ON p.categoria_id = c.id
+
+        GROUP BY
+          c.id,
+          c.nombre,
+          c.slug,
+          c.activo,
+          c.orden
+
+        ORDER BY
+          c.orden ASC,
+          c.nombre ASC
+      `);
+
+      res.json(resultado.rows);
+    } catch (error) {
+      console.error(
+        "Error al obtener categorías del administrador:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Error al obtener las categorías."
+      });
+    }
+  }
+);
+
+
+/* ==================================================
+   ADMIN - CREAR CATEGORÍA
+   POST /api/admin/categorias
+================================================== */
+
+router.post(
+  "/admin/categorias",
+  async (req, res) => {
+    const nombre =
+      String(
+        req.body.nombre || ""
+      ).trim();
+
+    const slug =
+      textoONull(req.body.slug) ||
+      crearSlug(nombre);
+
+    const activo =
+      convertirBooleano(
+        req.body.activo,
+        true
+      );
+
+    if (!nombre) {
+      return res.status(400).json({
+        error:
+          "El nombre de la categoría es obligatorio."
+      });
+    }
+
+    if (!slug) {
+      return res.status(400).json({
+        error:
+          "No se pudo generar un slug válido."
+      });
+    }
+
+    try {
+      const resultado = await db.query(
+        `
+          INSERT INTO categorias (
+            nombre,
+            slug,
+            activo,
+            orden
+          )
+
+          VALUES (
+            $1,
+            $2,
+            $3,
+
+            COALESCE(
+              (
+                SELECT
+                  MAX(orden) + 1
+
+                FROM categorias
+              ),
+              1
+            )
+          )
+
+          RETURNING
+            id,
+            nombre,
+            slug,
+            activo,
+            orden
+        `,
+        [
+          nombre,
+          slug,
+          activo
+        ]
+      );
+
+      res.status(201).json({
+        mensaje:
+          "Categoría creada correctamente.",
+
+        categoria:
+          resultado.rows[0]
+      });
+    } catch (error) {
+      console.error(
+        "Error al crear categoría:",
+        error
+      );
+
+      if (error.code === "23505") {
+        return res.status(400).json({
+          error:
+            "Ya existe una categoría con ese nombre o slug."
+        });
+      }
+
+      res.status(500).json({
+        error:
+          "Error al crear la categoría."
+      });
+    }
+  }
+);
+
+
+/* ==================================================
+   ADMIN - EDITAR CATEGORÍA
+   PUT /api/admin/categorias/:id
+================================================== */
+
+router.put(
+  "/admin/categorias/:id",
+  async (req, res) => {
+    const categoriaId =
+      Number(req.params.id);
+
+    if (
+      !Number.isInteger(categoriaId) ||
+      categoriaId <= 0
+    ) {
+      return res.status(400).json({
+        error:
+          "La categoría no es válida."
+      });
+    }
+
+    const nombre =
+      String(
+        req.body.nombre || ""
+      ).trim();
+
+    const slug =
+      textoONull(req.body.slug) ||
+      crearSlug(nombre);
+
+    if (!nombre) {
+      return res.status(400).json({
+        error:
+          "El nombre de la categoría es obligatorio."
+      });
+    }
+
+    if (!slug) {
+      return res.status(400).json({
+        error:
+          "El slug de la categoría no es válido."
+      });
+    }
+
+    try {
+      const resultado = await db.query(
+        `
+          UPDATE categorias
+
+          SET
+            nombre = $1,
+            slug = $2
+
+          WHERE id = $3
+
+          RETURNING
+            id,
+            nombre,
+            slug,
+            activo,
+            orden
+        `,
+        [
+          nombre,
+          slug,
+          categoriaId
+        ]
+      );
+
+      if (
+        resultado.rows.length === 0
+      ) {
+        return res.status(404).json({
+          error:
+            "Categoría no encontrada."
+        });
+      }
+
+      res.json({
+        mensaje:
+          "Categoría actualizada correctamente.",
+
+        categoria:
+          resultado.rows[0]
+      });
+    } catch (error) {
+      console.error(
+        "Error al editar categoría:",
+        error
+      );
+
+      if (error.code === "23505") {
+        return res.status(400).json({
+          error:
+            "Ya existe otra categoría con ese nombre o slug."
+        });
+      }
+
+      res.status(500).json({
+        error:
+          "Error al actualizar la categoría."
+      });
+    }
+  }
+);
+
+
+/* ==================================================
+   ADMIN - ACTIVAR O DESACTIVAR CATEGORÍA
+   PATCH /api/admin/categorias/:id/estado
+================================================== */
+
+router.patch(
+  "/admin/categorias/:id/estado",
+  async (req, res) => {
+    const categoriaId =
+      Number(req.params.id);
+
+    if (
+      !Number.isInteger(categoriaId) ||
+      categoriaId <= 0
+    ) {
+      return res.status(400).json({
+        error:
+          "La categoría no es válida."
+      });
+    }
+
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        req.body,
+        "activo"
+      )
+    ) {
+      return res.status(400).json({
+        error:
+          "Debés indicar el nuevo estado de la categoría."
+      });
+    }
+
+    const activo =
+      convertirBooleano(
+        req.body.activo
+      );
+
+    try {
+      const resultado = await db.query(
+        `
+          UPDATE categorias
+
+          SET activo = $1
+
+          WHERE id = $2
+
+          RETURNING
+            id,
+            nombre,
+            slug,
+            activo,
+            orden
+        `,
+        [
+          activo,
+          categoriaId
+        ]
+      );
+
+      if (
+        resultado.rows.length === 0
+      ) {
+        return res.status(404).json({
+          error:
+            "Categoría no encontrada."
+        });
+      }
+
+      res.json({
+        mensaje:
+          activo
+            ? "Categoría activada correctamente."
+            : "Categoría desactivada correctamente.",
+
+        categoria:
+          resultado.rows[0]
+      });
+    } catch (error) {
+      console.error(
+        "Error al cambiar el estado de la categoría:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Error al cambiar el estado de la categoría."
+      });
+    }
+  }
 );
 
 
@@ -882,10 +1252,10 @@ router.get(
 
             peso_gramos:
               producto.peso_gramos !==
-              null
+                null
                 ? Number(
-                    producto.peso_gramos
-                  )
+                  producto.peso_gramos
+                )
                 : null,
 
             cantidad_variantes:
@@ -1351,8 +1721,8 @@ router.put(
       const nombreNuevo =
         req.body.nombre !== undefined
           ? String(
-              req.body.nombre
-            ).trim()
+            req.body.nombre
+          ).trim()
           : actual.nombre;
 
       if (!nombreNuevo) {
@@ -1368,13 +1738,13 @@ router.put(
 
       const categoriaId =
         req.body.categoria_id !==
-        undefined
+          undefined
           ? enteroPositivoONull(
-              req.body.categoria_id
-            )
+            req.body.categoria_id
+          )
           : Number(
-              actual.categoria_id
-            );
+            actual.categoria_id
+          );
 
       if (!categoriaId) {
         await cliente.query(
@@ -1390,11 +1760,11 @@ router.put(
       const marcaId =
         req.body.marca_id !== undefined
           ? enteroPositivoONull(
-              req.body.marca_id
-            )
+            req.body.marca_id
+          )
           : enteroPositivoONull(
-              actual.marca_id
-            );
+            actual.marca_id
+          );
 
       const productoResult =
         await cliente.query(
@@ -1425,33 +1795,33 @@ router.put(
             categoriaId,
 
             req.body.descripcion !==
-            undefined
+              undefined
               ? textoONull(
-                  req.body.descripcion
-                )
+                req.body.descripcion
+              )
               : actual.descripcion,
 
             req.body.imagen_url !==
-            undefined
+              undefined
               ? textoONull(
-                  req.body.imagen_url
-                )
+                req.body.imagen_url
+              )
               : actual.imagen_url,
 
             req.body.dato_destacado !==
-            undefined
+              undefined
               ? textoONull(
-                  req.body.dato_destacado
-                )
+                req.body.dato_destacado
+              )
               : actual.dato_destacado,
 
             marcaId,
 
             req.body.activo !==
-            undefined
+              undefined
               ? convertirBooleano(
-                  req.body.activo
-                )
+                req.body.activo
+              )
               : actual.activo,
 
             productoId
@@ -1463,7 +1833,7 @@ router.put(
         req.body.stock !== undefined ||
         req.body.sabor !== undefined ||
         req.body.peso_gramos !==
-          undefined;
+        undefined;
 
       let varianteActualizada = null;
 
@@ -1506,42 +1876,42 @@ router.put(
         const precioNuevo =
           req.body.precio !== undefined
             ? numeroNoNegativo(
-                req.body.precio
-              )
+              req.body.precio
+            )
             : Number(
-                varianteActual?.precio ||
-                0
-              );
+              varianteActual?.precio ||
+              0
+            );
 
         const stockNuevo =
           req.body.stock !== undefined
             ? enteroNoNegativo(
-                req.body.stock
-              )
+              req.body.stock
+            )
             : Number(
-                varianteActual?.stock ||
-                0
-              );
+              varianteActual?.stock ||
+              0
+            );
 
         const saborNuevo =
           req.body.sabor !== undefined
             ? textoONull(
-                req.body.sabor
-              )
+              req.body.sabor
+            )
             : varianteActual?.sabor ||
-              null;
+            null;
 
         const pesoNuevo =
           req.body.peso_gramos !==
-          undefined
+            undefined
             ? enteroPositivoONull(
-                req.body.peso_gramos
-              )
+              req.body.peso_gramos
+            )
             : varianteActual
               ? enteroPositivoONull(
-                  varianteActual
-                    .peso_gramos
-                )
+                varianteActual
+                  .peso_gramos
+              )
               : null;
 
         if (varianteActual) {
@@ -1892,15 +2262,15 @@ router.put(
       const precio =
         req.body.precio !== undefined
           ? numeroNoNegativo(
-              req.body.precio
-            )
+            req.body.precio
+          )
           : Number(actual.precio);
 
       const stock =
         req.body.stock !== undefined
           ? enteroNoNegativo(
-              req.body.stock
-            )
+            req.body.stock
+          )
           : Number(actual.stock);
 
       if (precio <= 0) {
@@ -1934,15 +2304,15 @@ router.put(
           [
             req.body.sabor !== undefined
               ? textoONull(
-                  req.body.sabor
-                )
+                req.body.sabor
+              )
               : actual.sabor,
 
             req.body.peso_gramos !==
-            undefined
+              undefined
               ? enteroPositivoONull(
-                  req.body.peso_gramos
-                )
+                req.body.peso_gramos
+              )
               : actual.peso_gramos,
 
             precio,
@@ -1950,14 +2320,14 @@ router.put(
 
             req.body.sku !== undefined
               ? textoONull(
-                  req.body.sku
-                )
+                req.body.sku
+              )
               : actual.sku,
 
             req.body.activo !== undefined
               ? convertirBooleano(
-                  req.body.activo
-                )
+                req.body.activo
+              )
               : actual.activo,
 
             varianteId
