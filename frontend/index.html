@@ -2,47 +2,190 @@
 <html lang="es">
 
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KRATOS — Suplementos deportivos</title>
+
+  <title>
+    KRATOS — Suplementos deportivos
+  </title>
+
   <link rel="stylesheet" href="/css/styles.css">
+
   <link rel="stylesheet" href="/css/modal-producto.css">
+
+  <link rel="stylesheet" href="/css/responsive.css">
+
   <link rel="icon" type="image/png" href="/img/logo-kratos.png">
+
 </head>
+
 
 <body>
 
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
   <header class="header">
+
     <div class="header__top">
-      <a href="/" class="header-logo">
+
+      <!-- Logo -->
+
+      <a href="/" class="header-logo" aria-label="Ir al inicio de Kratos">
 
         <img src="/img/logo-kratos2.png" alt="Kratos" class="header-logo__imagen-completa">
 
       </a>
-      <form id="form-busqueda" class="search-bar">
-        <input id="input-busqueda" type="search" placeholder="Buscar creatina, whey, pre-entreno...">
-        <button type="submit" aria-label="Buscar">🔍</button>
-      </form>
+
+      <!-- Acciones del header -->
+
       <div class="header__actions">
-        <button id="btn-cuenta" class="icon-btn">Ingresar</button>
-        <button id="btn-abrir-carrito" class="icon-btn">
-          Carrito <span id="cart-count" class="cart-count">0</span>
+
+        <!-- Cuenta -->
+
+        <button id="btn-cuenta" class="icon-btn icon-btn--cuenta" type="button" aria-label="Ingresar a mi cuenta">
+
+          <span class="icon-btn__icono" aria-hidden="true">
+            👤
+          </span>
+
+          <span class="icon-btn__texto">
+            Ingresar
+          </span>
+
         </button>
+
+
+        <!-- Carrito -->
+
+        <button id="btn-abrir-carrito" class="icon-btn icon-btn--carrito" type="button" aria-label="Abrir carrito">
+
+          <span class="icon-btn__icono" aria-hidden="true">
+            🛒
+          </span>
+
+          <span class="icon-btn__texto">
+            Carrito
+          </span>
+
+          <span id="cart-count" class="cart-count">
+            0
+          </span>
+
+        </button>
+
+
+        <!-- Menú hamburguesa -->
+
+        <button id="btnMenuMobile" class="btn-menu-mobile" type="button" aria-label="Abrir menú de categorías"
+          aria-controls="menuMobile" aria-expanded="false">
+
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </button>
+
       </div>
+
     </div>
-    <nav id="categorias-nav" class="categorias-nav" aria-label="Categorías de productos"></nav>
+
+
+    <!-- Categorías de escritorio -->
+
+    <nav id="categorias-nav" class="categorias-nav" aria-label="Categorías de productos">
+      <!-- Se completan desde productos.js -->
+    </nav>
+
   </header>
 
-  <section class="hero">
-    <div class="hero__contenido">
-      <span class="hero__eyebrow">RENDIMIENTO MEDIBLE</span>
 
-      <div class="hero__badge">
-        <span class="hero__badge-dot"></span>
-        Suplementación premium · resultados reales
+  <!-- =====================================================
+       MENÚ MÓVIL
+  ====================================================== -->
+
+  <div id="menuMobileOverlay" class="menu-mobile-overlay" aria-hidden="true"></div>
+
+
+  <aside id="menuMobile" class="menu-mobile" aria-hidden="true" aria-label="Menú de categorías">
+
+    <div class="menu-mobile__header">
+
+      <div>
+
+        <span class="menu-mobile__eyebrow">
+          Kratos Performance
+        </span>
+
+        <h2>
+          Categorías
+        </h2>
+
       </div>
 
-      <h1>Cada dosis, <span>certificada</span>.</h1>
+
+      <button id="btnCerrarMenuMobile" class="menu-mobile__cerrar" type="button" aria-label="Cerrar menú">
+        &times;
+      </button>
+
+    </div>
+
+
+    <nav id="menuMobileCategorias" class="menu-mobile__categorias" aria-label="Categorías en menú móvil">
+
+      <p class="menu-mobile__cargando">
+        Cargando categorías...
+      </p>
+
+    </nav>
+
+
+    <div class="menu-mobile__footer">
+
+      <p>
+        Encontrá proteínas, creatinas, accesorios y todo lo
+        necesario para mejorar tu rendimiento.
+      </p>
+
+      <a href="#grid-productos" class="menu-mobile__ver-productos">
+        Ver todos los productos
+      </a>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <section class="hero">
+
+    <div class="hero__contenido">
+
+      <span class="hero__eyebrow">
+        RENDIMIENTO MEDIBLE
+      </span>
+
+
+      <div class="hero__badge">
+
+        <span class="hero__badge-dot"></span>
+
+        Suplementación premium · resultados reales
+
+      </div>
+
+
+      <h1>
+        Cada dosis,
+        <span>certificada</span>.
+      </h1>
+
 
       <p>
         Proteínas, creatina, colágenos, pre-entrenos y más.
@@ -50,41 +193,95 @@
         y entrenar con datos reales, no con promesas vacías.
       </p>
 
+
       <div class="hero__ctas">
-        <a href="#grid-productos" class="hero__cta-primaria">Ver catálogo</a>
-        <a href="/?categoria=proteinas" class="hero__cta-secundaria">Explorar proteínas</a>
+
+        <a href="#grid-productos" class="hero__cta-primaria">
+          Ver catálogo
+        </a>
+
+        <a href="/?categoria=proteinas" class="hero__cta-secundaria">
+          Explorar proteínas
+        </a>
+
       </div>
+
 
       <div class="hero__stats">
-        <div class="hero__stat">
-          <strong>+9</strong>
-          <span>Productos activos</span>
-        </div>
 
         <div class="hero__stat">
-          <strong>100%</strong>
-          <span>Calidad seleccionada</span>
+
+          <strong>
+            +9
+          </strong>
+
+          <span>
+            Productos activos
+          </span>
+
         </div>
 
+
         <div class="hero__stat">
-          <strong>24/7</strong>
-          <span>Tienda online</span>
+
+          <strong>
+            100%
+          </strong>
+
+          <span>
+            Calidad seleccionada
+          </span>
+
         </div>
+
+
+        <div class="hero__stat">
+
+          <strong>
+            24/7
+          </strong>
+
+          <span>
+            Tienda online
+          </span>
+
+        </div>
+
       </div>
+
 
       <div class="hero__trust">
-        <span>✔ Compra segura</span>
-        <span>✔ Pago con Mercado Pago</span>
-        <span>✔ Stock actualizado</span>
+
+        <span>
+          ✔ Compra segura
+        </span>
+
+        <span>
+          ✔ Pago con Mercado Pago
+        </span>
+
+        <span>
+          ✔ Stock actualizado
+        </span>
+
       </div>
+
     </div>
 
+
+    <!-- Producto 3D -->
+
     <div class="hero__3d">
+
       <div class="hero__3d-bg"></div>
+
       <div class="producto-glow"></div>
 
+
       <div class="hero__panel-producto">
+
         <div id="heroProducto3D" class="hero-producto-3d" aria-label="Modelo 3D de un pote de proteína Kratos"></div>
+
 
         <div class="producto-info">
 
@@ -92,113 +289,343 @@
             ENA · TRUEMADE
           </span>
 
+
           <h3 id="productoNombre3D">
             Whey Protein
           </h3>
+
 
           <p id="productoDescripcion3D">
             25 g de proteína · 6 g BCAA · 30 porciones
           </p>
 
+
           <div class="hero__mini-tags">
-            <span>Chocolate</span>
-            <span>930 g</span>
-            <span>Recuperación</span>
+
+            <span>
+              Chocolate
+            </span>
+
+            <span>
+              930 g
+            </span>
+
+            <span>
+              Recuperación
+            </span>
+
           </div>
 
         </div>
+
       </div>
+
     </div>
+
   </section>
 
-  <main class="contenido">
-    <h2 id="titulo-seccion" class="seccion-titulo">Todo el catálogo</h2>
+
+  <!-- =====================================================
+       CATÁLOGO
+  ====================================================== -->
+
+  <main id="productos" class="contenido">
+
+    <h2 id="titulo-seccion" class="seccion-titulo">
+      Todo el catálogo
+    </h2>
+
+
     <div id="grid-productos" class="grid-productos"></div>
+
   </main>
 
-  <!-- Drawer del carrito -->
+
+  <!-- =====================================================
+       CARRITO LATERAL
+  ====================================================== -->
+
   <div id="overlay" class="overlay"></div>
+
+
   <aside id="drawer-carrito" class="drawer" aria-label="Carrito de compras">
+
     <div class="drawer__header">
-      <h2>Tu carrito</h2>
-      <button id="drawer-cerrar" class="drawer__cerrar" aria-label="Cerrar carrito">&times;</button>
+
+      <h2>
+        Tu carrito
+      </h2>
+
+      <button id="drawer-cerrar" class="drawer__cerrar" type="button" aria-label="Cerrar carrito">
+        &times;
+      </button>
+
     </div>
+
+
     <div id="drawer-items" class="drawer__items"></div>
+
+
     <div class="drawer__footer">
+
       <div class="drawer__total">
-        <span>Total</span>
-        <span id="drawer-total-valor">$0</span>
+
+        <span>
+          Total
+        </span>
+
+        <span id="drawer-total-valor">
+          $0
+        </span>
+
       </div>
-      <button id="btn-checkout" class="btn-checkout" disabled>Pagar con Mercado Pago</button>
+
+
+      <button id="btn-checkout" class="btn-checkout" type="button" disabled>
+        Pagar con Mercado Pago
+      </button>
+
     </div>
+
   </aside>
 
-  <!-- Modal de login / registro -->
-  <div id="modal-auth" class="modal">
-    <div class="modal__caja">
-      <button id="modal-auth-cerrar" class="modal__cerrar" aria-label="Cerrar">&times;</button>
-      <h2 id="modal-auth-titulo">Ingresar</h2>
-      <div id="modal-auth-error" class="modal__error"></div>
-      <form id="form-auth">
-        <div id="campo-nombre" class="campo" style="display:none;">
-          <label for="campo-nombre-input">Nombre</label>
-          <input id="campo-nombre-input" type="text" autocomplete="name">
-        </div>
-        <div class="campo">
-          <label for="campo-email">Email</label>
-          <input id="campo-email" type="email" required autocomplete="email">
-        </div>
-        <div class="campo">
-          <label for="campo-password">Contraseña</label>
-          <input id="campo-password" type="password" required autocomplete="current-password">
-        </div>
-        <button id="btn-auth-submit" type="submit" class="btn-primario">Ingresar</button>
-      </form>
-      <div class="modal__switch">
-        <button id="btn-switch-modo" type="button">¿No tenés cuenta? Registrate</button>
+
+  <!-- =====================================================
+     MODAL DE LOGIN, REGISTRO Y RECUPERACIÓN
+====================================================== -->
+
+  <div id="modal-auth" class="modal modal-auth" aria-hidden="true" inert>
+
+    <div class="modal__caja modal-auth__caja">
+
+      <!-- Cerrar -->
+
+      <button id="modal-auth-cerrar" class="modal__cerrar" type="button" aria-label="Cerrar">
+        &times;
+      </button>
+
+
+      <!-- Cabecera -->
+
+      <div class="modal-auth__cabecera">
+
+        <span class="modal-auth__eyebrow">
+          KRATOS PERFORMANCE
+        </span>
+
+        <h2 id="modal-auth-titulo">
+          Ingresar
+        </h2>
+
+        <p id="modal-auth-subtitulo">
+          Accedé a tu cuenta para gestionar tus compras.
+        </p>
+
       </div>
+
+
+      <!-- Mensajes -->
+
+      <div id="modal-auth-error" class="modal__error"></div>
+
+      <div id="modal-auth-exito" class="modal__exito"></div>
+
+
+      <!-- Formulario -->
+
+      <form id="form-auth">
+
+
+        <!-- Nombre: solo aparece al registrarse -->
+
+        <div id="campo-nombre" class="campo" hidden>
+
+          <label for="campo-nombre-input">
+            Nombre
+          </label>
+
+          <div class="campo__input">
+
+            <span aria-hidden="true">
+              👤
+            </span>
+
+            <input id="campo-nombre-input" type="text" autocomplete="name" placeholder="Tu nombre">
+
+          </div>
+
+        </div>
+
+
+        <!-- Email -->
+
+        <div class="campo">
+
+          <label for="campo-email">
+            Correo electrónico
+          </label>
+
+          <div class="campo__input">
+
+            <span aria-hidden="true">
+              ✉
+            </span>
+
+            <input id="campo-email" type="email" required autocomplete="email" placeholder="nombre@correo.com">
+
+          </div>
+
+        </div>
+
+
+        <!-- Contraseña -->
+
+        <div id="campo-password-contenedor" class="campo">
+
+          <label for="campo-password">
+            Contraseña
+          </label>
+
+          <div class="campo__input campo__input--password">
+
+            <span aria-hidden="true">
+              🔒
+            </span>
+
+            <input id="campo-password" type="password" required autocomplete="current-password"
+              placeholder="Tu contraseña">
+
+            <button id="btn-mostrar-password" class="campo__mostrar-password" type="button"
+              aria-label="Mostrar contraseña">
+              Ver
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Recuperar contraseña -->
+
+        <div id="auth-recuperacion-link" class="modal-auth__recuperacion">
+
+          <button id="btn-olvide-password" type="button">
+            ¿Olvidaste tu contraseña?
+          </button>
+
+        </div>
+
+
+        <!-- Submit -->
+
+        <button id="btn-auth-submit" type="submit" class="btn-primario">
+          Ingresar
+        </button>
+
+      </form>
+
+
+      <!-- Seguridad -->
+
+      <div class="modal-auth__seguridad">
+
+        <span aria-hidden="true">
+          🔒
+        </span>
+
+        <span>
+          Tus datos se transmiten de forma segura
+        </span>
+
+      </div>
+
+
+      <!-- Login / Registro -->
+
+      <div class="modal__switch">
+
+        <button id="btn-switch-modo" type="button">
+          ¿No tenés cuenta? Registrate
+        </button>
+
+      </div>
+
     </div>
+
   </div>
 
-  <!-- Modal producto -->
+
+  <!-- =====================================================
+       MODAL ANTIGUO DE PRODUCTO
+  ====================================================== -->
+
   <div id="modal-producto" class="modal-producto">
 
     <div class="modal-producto__caja">
 
-      <button id="cerrar-producto" class="modal-producto__cerrar">
-        ×
+      <button id="cerrar-producto" class="modal-producto__cerrar" type="button" aria-label="Cerrar producto">
+        &times;
       </button>
+
+
       <div class="producto-detalle">
 
         <div class="producto-detalle__imagen">
-          <img id="detalle-imagen">
+
+          <img id="detalle-imagen" src="" alt="">
+
         </div>
 
+
         <div class="producto-detalle__info">
+
           <span id="detalle-categoria"></span>
+
           <h2 id="detalle-nombre"></h2>
+
           <h3 id="detalle-precio"></h3>
 
-          <p id="detalle-descripcion">
-          </p>
+          <p id="detalle-descripcion"></p>
+
 
           <div class="selector">
-            <label>Tamaño:</label>
+
+            <label>
+              Tamaño:
+            </label>
+
             <div id="detalle-tamanos"></div>
+
           </div>
+
 
           <div class="cantidad">
-            <button id="menos">-</button>
-            <span id="cantidad">1</span>
-            <button id="mas">+</button>
+
+            <button id="menos" type="button">
+              -
+            </button>
+
+            <span id="cantidad">
+              1
+            </span>
+
+            <button id="mas" type="button">
+              +
+            </button>
+
           </div>
 
+
           <small>
+
             Stock disponible:
+
             <span id="detalle-stock"></span>
+
           </small>
 
-          <button id="detalle-agregar">
+
+          <button id="detalle-agregar" type="button">
             Añadir al carrito
           </button>
 
@@ -210,31 +637,35 @@
 
   </div>
 
-  <!-- =====================================
-     MODAL DE DETALLE DEL PRODUCTO
-====================================== -->
+
+  <!-- =====================================================
+       MODAL NUEVO DE DETALLE DEL PRODUCTO
+  ====================================================== -->
 
   <div id="modal-detalle-producto" class="modal-detalle-producto" role="dialog" aria-modal="true"
     aria-labelledby="detalle-producto-nombre" aria-hidden="true" hidden>
 
     <div class="modal-detalle-producto__overlay"></div>
 
+
     <div class="modal-detalle-producto__caja">
 
-      <!-- Botón cerrar -->
       <button id="btn-cerrar-detalle" class="modal-detalle-producto__cerrar" type="button"
         aria-label="Cerrar detalle del producto">
         &times;
       </button>
 
+
       <div class="detalle-producto">
 
-        <!-- LADO IZQUIERDO: imagen -->
+        <!-- Imagen -->
+
         <div class="detalle-producto__media">
 
           <div class="detalle-producto__imagen-contenedor">
 
             <img id="detalle-producto-imagen" class="detalle-producto__imagen" src="" alt="">
+
 
             <div id="detalle-producto-sin-imagen" class="detalle-producto__sin-imagen">
               📦
@@ -244,59 +675,75 @@
 
         </div>
 
-        <!-- LADO DERECHO: información -->
+
+        <!-- Información -->
+
         <div class="detalle-producto__informacion">
 
           <span id="detalle-producto-categoria" class="detalle-producto__categoria">
             Categoría
           </span>
 
+
           <h2 id="detalle-producto-nombre" class="detalle-producto__nombre">
             Nombre del producto
           </h2>
+
 
           <p id="detalle-producto-descripcion" class="detalle-producto__descripcion">
             Descripción del producto.
           </p>
 
+
           <div id="detalle-producto-precio" class="detalle-producto__precio">
             $0
           </div>
 
-          <!-- Selector de sabor -->
+
+          <!-- Sabor -->
+
           <div id="grupo-detalle-sabor" class="detalle-producto__grupo">
 
             <label for="detalle-producto-sabor">
               Sabor
             </label>
 
+
             <select id="detalle-producto-sabor">
+
               <option value="">
                 Seleccionar sabor
               </option>
+
             </select>
 
           </div>
 
-          <!-- Selector de peso -->
+
+          <!-- Peso -->
+
           <div id="grupo-detalle-peso" class="detalle-producto__grupo">
 
             <span class="detalle-producto__etiqueta">
               Peso
             </span>
 
+
             <div id="detalle-producto-pesos" class="detalle-producto__opciones-peso">
-              <!-- Los botones de peso se crearán desde JavaScript -->
+              <!-- Se completa desde JavaScript -->
             </div>
 
           </div>
 
+
           <!-- Cantidad -->
+
           <div class="detalle-producto__grupo">
 
             <span class="detalle-producto__etiqueta">
               Cantidad
             </span>
+
 
             <div class="detalle-producto__cantidad">
 
@@ -304,9 +751,11 @@
                 −
               </button>
 
+
               <span id="detalle-producto-cantidad">
                 1
               </span>
+
 
               <button id="btn-detalle-sumar" type="button" aria-label="Agregar una unidad">
                 +
@@ -314,24 +763,38 @@
 
             </div>
 
+
             <p class="detalle-producto__stock">
+
               Stock disponible:
-              <strong id="detalle-producto-stock">0</strong>
+
+              <strong id="detalle-producto-stock">
+                0
+              </strong>
+
             </p>
 
           </div>
 
-          <!-- Botón carrito -->
+
           <button id="btn-detalle-agregar" class="detalle-producto__agregar" type="button">
             Agregar al carrito
           </button>
 
-          <!-- Información de confianza -->
+
           <div class="detalle-producto__beneficios">
 
-            <span>🚚 Envíos disponibles</span>
-            <span>🔒 Pago seguro</span>
-            <span>📦 Stock actualizado</span>
+            <span>
+              🚚 Envíos disponibles
+            </span>
+
+            <span>
+              🔒 Pago seguro
+            </span>
+
+            <span>
+              📦 Stock actualizado
+            </span>
 
           </div>
 
@@ -343,10 +806,14 @@
 
   </div>
 
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
   <footer class="footer">
 
     <div class="footer__contenedor">
-
 
       <div class="footer__marca">
 
@@ -360,7 +827,6 @@
         </p>
 
       </div>
-
 
 
       <div class="footer__links">
@@ -384,13 +850,11 @@
       </div>
 
 
-
       <div class="footer__contacto">
 
         <h3>
           Contacto
         </h3>
-
 
         <p>
           📍 Mendoza, Argentina
@@ -404,24 +868,19 @@
           📱 +54 9 261 715 7978
         </p>
 
-
       </div>
 
 
-
       <div class="footer__redes">
-
 
         <h3>
           Seguinos
         </h3>
 
 
-
         <div class="social-grid">
 
-
-          <a class="social-card instagram">
+          <a class="social-card instagram" href="#" aria-label="Instagram">
 
             <span>
               ◎
@@ -430,8 +889,7 @@
           </a>
 
 
-
-          <a class="social-card whatsapp">
+          <a class="social-card whatsapp" href="#" aria-label="WhatsApp">
 
             <span>
               ☎
@@ -440,8 +898,7 @@
           </a>
 
 
-
-          <a class="social-card tiktok">
+          <a class="social-card tiktok" href="#" aria-label="TikTok">
 
             <span>
               ♪
@@ -449,16 +906,11 @@
 
           </a>
 
-
         </div>
-
-
 
       </div>
 
-
     </div>
-
 
 
     <div class="footer__bottom">
@@ -467,14 +919,25 @@
 
     </div>
 
-
   </footer>
 
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
   <script src="/js/api.js"></script>
+
   <script src="/js/auth.js"></script>
+
   <script src="/js/productos.js"></script>
+
   <script src="/js/carrito.js"></script>
+
+  <script src="/js/menu-mobile.js"></script>
+
   <script type="module" src="/js/hero3d.js"></script>
+
 </body>
 
 </html>
