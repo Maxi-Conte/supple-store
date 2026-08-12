@@ -767,38 +767,167 @@ body.menu-mobile-abierto {
   }
 
 
-  /* Carrito */
+  /* =========================================================
+   CARRITO PREMIUM — CELULARES
+========================================================= */
 
-  .drawer {
-    width: 100%;
+.drawer {
+  width: 100%;
 
-    border-left: 0;
-  }
+  border-left: 0;
 
-  .drawer__header {
-    padding: 17px 16px;
-  }
+  box-shadow:
+    none;
+}
 
-  .drawer__items {
-    padding: 14px 16px;
-  }
 
-  .drawer__footer {
-    padding: 18px 16px;
-  }
+/* Header */
 
-  .item-carrito {
-    align-items: flex-start;
-  }
+.drawer__header {
+  padding:
+    22px 18px 19px;
+}
 
-  .item-carrito__thumb {
-    width: 64px;
-    height: 64px;
-  }
+.drawer__header h2 {
+  font-size: 19px;
+}
 
-  .item-carrito__nombre {
-    white-space: normal;
-  }
+.drawer__header p {
+  max-width: 270px;
+
+  font-size: 10.5px;
+}
+
+.drawer__cerrar {
+  width: 37px;
+  height: 37px;
+}
+
+
+/* Productos */
+
+.drawer__items {
+  gap: 11px;
+
+  padding:
+    16px 14px 20px;
+}
+
+
+/* Tarjeta */
+
+.item-carrito {
+  grid-template-columns:
+    78px minmax(0, 1fr);
+
+  gap: 12px;
+
+  padding: 11px;
+
+  border-radius: 10px;
+}
+
+
+/* Imagen */
+
+.item-carrito__thumb {
+  width: 78px;
+  height: 94px;
+
+  border-radius: 8px;
+}
+
+
+/* Nombre */
+
+.item-carrito__nombre {
+  font-size: 12.5px;
+
+  white-space: normal;
+}
+
+
+/* Variante */
+
+.item-carrito__variante {
+  margin-top: 5px;
+
+  padding:
+    3px 6px;
+
+  font-size: 8.8px;
+}
+
+
+/* Precio */
+
+.item-carrito__precio {
+  margin-top: 5px;
+
+  font-size: 10px;
+}
+
+
+/* Subtotal */
+
+.item-carrito__subtotal {
+  margin-top: 4px;
+
+  font-size: 9.5px;
+}
+
+.item-carrito__subtotal strong {
+  font-size: 11px;
+}
+
+
+/* Cantidad */
+
+.item-carrito__cantidad {
+  padding-top: 8px;
+}
+
+.item-carrito__cantidad
+button[data-accion="restar"],
+.item-carrito__cantidad
+button[data-accion="sumar"] {
+  width: 28px;
+  height: 28px;
+}
+
+.item-carrito__cantidad > span {
+  min-width: 32px;
+  height: 28px;
+}
+
+
+/* Footer */
+
+.drawer__footer {
+  padding:
+    16px 14px 18px;
+}
+
+.drawer__resumen {
+  padding:
+    12px 13px;
+}
+
+
+/* Total */
+
+#drawer-total-valor {
+  font-size: 19px;
+}
+
+
+/* Checkout */
+
+.btn-checkout {
+  min-height: 49px;
+
+  font-size: 10.5px;
+}
 
 
 /* =========================================================
@@ -880,11 +1009,103 @@ body.menu-mobile-abierto {
   }
 
 
-  /* Carrito */
+  /* =========================================================
+   CARRITO — CELULARES PEQUEÑOS
+========================================================= */
 
-  .drawer__total {
-    font-size: 16px;
-  }
+.drawer__header {
+  padding:
+    19px 14px 17px;
+}
+
+.drawer__eyebrow {
+  font-size: 8.5px;
+}
+
+.drawer__header h2 {
+  font-size: 18px;
+}
+
+.drawer__header p {
+  font-size: 10px;
+}
+
+
+/* Productos */
+
+.drawer__items {
+  padding:
+    13px 10px 17px;
+}
+
+
+/* Tarjetas */
+
+.item-carrito {
+  grid-template-columns:
+    70px minmax(0, 1fr);
+
+  gap: 10px;
+
+  padding: 10px;
+}
+
+.item-carrito__thumb {
+  width: 70px;
+  height: 86px;
+}
+
+.item-carrito__nombre {
+  font-size: 11.8px;
+}
+
+.item-carrito__variante {
+  font-size: 8px;
+}
+
+
+/* Cantidad */
+
+.item-carrito__cantidad
+button[data-accion="restar"],
+.item-carrito__cantidad
+button[data-accion="sumar"] {
+  width: 27px;
+  height: 27px;
+}
+
+.item-carrito__cantidad > span {
+  min-width: 29px;
+  height: 27px;
+}
+
+
+/* Quitar */
+
+.item-carrito__eliminar {
+  padding:
+    0 4px !important;
+
+  font-size:
+    8.5px !important;
+}
+
+
+/* Footer */
+
+.drawer__footer {
+  padding:
+    14px 10px 15px;
+}
+
+.drawer__resumen {
+  padding:
+    11px 12px;
+}
+
+.drawer__seguridad div span {
+  font-size: 8px;
+}
 
 
   /* Footer */

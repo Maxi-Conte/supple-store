@@ -342,37 +342,140 @@
 
 
   <!-- =====================================================
-       CARRITO LATERAL
-  ====================================================== -->
+     CARRITO LATERAL — KRATOS
+====================================================== -->
 
-  <div id="overlay" class="overlay"></div>
+<div
+  id="overlay"
+  class="overlay"
+></div>
 
 
-  <aside id="drawer-carrito" class="drawer" aria-label="Carrito de compras">
+<aside
+  id="drawer-carrito"
+  class="drawer"
+  aria-label="Carrito de compras"
+>
 
-    <div class="drawer__header">
+  <!-- =================================================
+       CABECERA
+  ================================================== -->
 
-      <h2>
-        Tu carrito
-      </h2>
+  <div class="drawer__header">
 
-      <button id="drawer-cerrar" class="drawer__cerrar" type="button" aria-label="Cerrar carrito">
-        &times;
-      </button>
+    <div class="drawer__header-info">
+
+      <span class="drawer__eyebrow">
+        KRATOS PERFORMANCE
+      </span>
+
+      <div class="drawer__titulo-fila">
+
+        <h2>
+          Tu carrito
+        </h2>
+
+        <span
+          id="drawer-item-count"
+          class="drawer__contador-productos"
+        >
+          0
+        </span>
+
+      </div>
+
+      <p>
+        Revisá tus productos antes de finalizar la compra.
+      </p>
 
     </div>
 
 
-    <div id="drawer-items" class="drawer__items"></div>
+    <button
+      id="drawer-cerrar"
+      class="drawer__cerrar"
+      type="button"
+      aria-label="Cerrar carrito"
+    >
+      &times;
+    </button>
+
+  </div>
 
 
-    <div class="drawer__footer">
+  <!-- =================================================
+       PRODUCTOS
+  ================================================== -->
+
+  <div
+    id="drawer-items"
+    class="drawer__items"
+  ></div>
+
+
+  <!-- =================================================
+       RESUMEN DE COMPRA
+  ================================================== -->
+
+  <div class="drawer__footer">
+
+    <div class="drawer__resumen">
+
+      <div class="drawer__resumen-titulo">
+
+        <span>
+          Resumen del pedido
+        </span>
+
+        <span class="drawer__resumen-badge">
+          KRATOS
+        </span>
+
+      </div>
+
+
+      <div class="drawer__resumen-fila">
+
+        <span>
+          Productos
+        </span>
+
+        <span id="drawer-subtotal-valor">
+          $0
+        </span>
+
+      </div>
+
+
+      <div class="drawer__resumen-fila">
+
+        <span>
+          Envío
+        </span>
+
+        <span class="drawer__envio-pendiente">
+          Se calcula después
+        </span>
+
+      </div>
+
+
+      <div class="drawer__separador"></div>
+
 
       <div class="drawer__total">
 
-        <span>
-          Total
-        </span>
+        <div>
+
+          <span class="drawer__total-label">
+            Total
+          </span>
+
+          <small>
+            Impuestos incluidos
+          </small>
+
+        </div>
 
         <span id="drawer-total-valor">
           $0
@@ -380,14 +483,64 @@
 
       </div>
 
+    </div>
 
-      <button id="btn-checkout" class="btn-checkout" type="button" disabled>
-        Pagar con Mercado Pago
-      </button>
+
+    <!-- Mercado Pago -->
+
+    <button
+      id="btn-checkout"
+      class="btn-checkout"
+      type="button"
+      disabled
+    >
+
+      <span class="btn-checkout__contenido">
+
+        <span class="btn-checkout__texto">
+          Pagar con Mercado Pago
+        </span>
+
+        <span
+          class="btn-checkout__flecha"
+          aria-hidden="true"
+        >
+          →
+        </span>
+
+      </span>
+
+    </button>
+
+
+    <!-- Seguridad -->
+
+    <div class="drawer__seguridad">
+
+      <span
+        class="drawer__seguridad-icono"
+        aria-hidden="true"
+      >
+        🔒
+      </span>
+
+      <div>
+
+        <strong>
+          Compra protegida
+        </strong>
+
+        <span>
+          Pago procesado de forma segura.
+        </span>
+
+      </div>
 
     </div>
 
-  </aside>
+  </div>
+
+</aside>
 
 
   <!-- =====================================================
