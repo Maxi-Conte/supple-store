@@ -9,6 +9,8 @@ const productosRoutes = require('./routes/productos');
 const carritoRoutes = require('./routes/carrito');
 const pagosRoutes = require('./routes/pagos');
 const adminSesionRoutes = require('./routes/admin-sesion');
+const pedidosRoutes = require('./routes/pedidos');
+const { obtenerConfigEnvio } = require('./utils/envio');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,11 +30,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api', productosRoutes);
 app.use('/api/carrito', carritoRoutes);
 app.use('/api/pagos', pagosRoutes);
+app.use('/api/admin/pedidos', pedidosRoutes);
 app.use('/api/admin', adminSesionRoutes);
 
 // Config pública que el frontend necesita (public key de MP, nunca el access token)
 app.get('/api/config', (req, res) => {
-  res.json({ mpPublicKey: process.env.MP_PUBLIC_KEY });
+  res.json({
+    mpPublicKey: process.env.MP_PUBLIC_KEY,
+    envio: obtenerConfigEnvio()
+  });
 });
 
 // Frontend estático

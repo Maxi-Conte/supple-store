@@ -127,6 +127,17 @@
 
                 <div class="admin-toolbar__acciones">
 
+                    <button id="btnTogglePedidos" type="button" class="btn-categorias-toggle" aria-expanded="false"
+                        aria-controls="contenidoPedidos">
+                        <span>
+                            📦 Pedidos
+                        </span>
+
+                        <span id="iconoTogglePedidos" class="btn-categorias-toggle__icono">
+                            +
+                        </span>
+                    </button>
+
                     <button id="btnToggleCategorias" type="button" class="btn-categorias-toggle" aria-expanded="false"
                         aria-controls="contenidoCategorias">
                         <span>
@@ -210,6 +221,60 @@
             </section>
 
             <!-- =========================================
+     GESTIÓN DE PEDIDOS
+========================================= -->
+
+            <section id="contenidoPedidos" class="admin-categorias-panel" hidden>
+
+                <div class="admin-categorias__encabezado">
+
+                    <div>
+                        <span class="admin-categorias__etiqueta">
+                            Ventas
+                        </span>
+
+                        <h2>
+                            Gestión de pedidos
+                        </h2>
+
+                        <p>
+                            Revisá los datos de entrega y actualizá el estado
+                            de cada pedido. El cliente recibe un aviso por email.
+                        </p>
+                    </div>
+
+                    <div class="filtro-productos">
+
+                        <label for="filtroPedidos">
+                            Mostrar:
+                        </label>
+
+                        <select id="filtroPedidos">
+                            <option value="">Pagados y en curso</option>
+                            <option value="pagado">Pagados (sin preparar)</option>
+                            <option value="preparando">Preparando</option>
+                            <option value="enviado">Enviados</option>
+                            <option value="listo_retiro">Listos para retirar</option>
+                            <option value="entregado">Entregados</option>
+                            <option value="cancelado">Cancelados</option>
+                            <option value="pendiente">Pago pendiente</option>
+                            <option value="rechazado">Pago rechazado</option>
+                            <option value="todos">Todos</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <section id="formPedido" class="admin-formulario admin-formulario--categoria">
+                </section>
+
+                <div id="listaPedidos" class="grid-categorias-admin">
+                </div>
+
+            </section>
+
+            <!-- =========================================
      GESTIÓN DE CATEGORÍAS
 ========================================= -->
 
@@ -265,6 +330,7 @@
     <script src="/js/login.js"></script>
     <script src="/js/admin.js"></script>
     <script src="/js/admin-categorias.js"></script>
+    <script src="/js/admin-pedidos.js"></script>
 
 </body>
 

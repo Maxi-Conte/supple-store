@@ -111,6 +111,15 @@ function renderCarrito(data) {
         formatearPrecio(0);
     }
 
+    const subtotalVacio = document.getElementById(
+      "drawer-subtotal-valor"
+    );
+
+    if (subtotalVacio) {
+      subtotalVacio.textContent =
+        formatearPrecio(0);
+    }
+
     return;
   }
 
@@ -235,6 +244,15 @@ function renderCarrito(data) {
 
   if (totalElemento) {
     totalElemento.textContent =
+      formatearPrecio(data.total);
+  }
+
+  const subtotalElemento = document.getElementById(
+    "drawer-subtotal-valor"
+  );
+
+  if (subtotalElemento) {
+    subtotalElemento.textContent =
       formatearPrecio(data.total);
   }
 
@@ -448,34 +466,237 @@ function emailValido(email) {
   );
 }
 
-async function iniciarCheckout() {
-  const boton = document.getElementById(
-    "btn-checkout"
+let configEnvio = null;
+
+async function obtenerConfigEnvio() {
+  if (configEnvio) return configEnvio;
+
+  try {
+    const data = await api.get("/config");
+
+    configEnvio = data.envio || null;
+  } catch (error) {
+    console.error(
+      "No se pudo obtener la configuración de envío:",
+      error
+    );
+  }
+
+  return configEnvio || {
+    costo: 0,
+    gratisDesde: 0,
+    retiroHabilitado: false,
+    retiroDireccion: ""
+  };
+}
+
+function calcularEnvioCheckout(config, metodo, subtotal) {
+  if (metodo === "retiro") return 0;
+
+  if (
+    config.gratisDesde > 0 &&
+    subtotal >= config.gratisDesde
+  ) {
+    return 0;
+  }
+
+  return config.costo;
+}
+
+let subtotalCheckout = 0;
+
+function campoCheckout(id) {
+  return document.getElementById(
+    `checkout-${id}`
+  );
+}
+
+function mostrarErrorCheckout(mensaje) {
+  const caja = document.getElementById(
+    "modal-checkout-error"
   );
 
-  if (!boton) return;
+  if (!caja) return;
+
+  caja.textContent = mensaje || "";
+
+  caja.classList.toggle(
+    "visible",
+    Boolean(mensaje)
+  );
+}
+
+/* Muestra u oculta la dirección y actualiza el resumen */
+
+async function actualizarResumenCheckout() {
+  const config = await obtenerConfigEnvio();
+
+  const metodo =
+    campoCheckout("entrega")?.value || "envio";
+
+  const esRetiro = metodo === "retiro";
+
+  const camposEnvio = document.getElementById(
+    "checkout-campos-envio"
+  );
+
+  if (camposEnvio) {
+    camposEnvio.hidden = esRetiro;
+  }
+
+  const retiroInfo = campoCheckout("retiro-info");
+
+  if (retiroInfo) {
+    retiroInfo.hidden = !esRetiro;
+    retiroInfo.textContent = esRetiro
+      ? `📍 ${config.retiroDireccion}`
+      : "";
+  }
+
+  const envio = calcularEnvioCheckout(
+    config,
+    metodo,
+    subtotalCheckout
+  );
+
+  const textoEnvio = envio > 0
+    ? formatearPrecio(envio)
+    : esRetiro
+      ? "sin cargo"
+      : "gratis";
+
+  let resumen =
+    `Productos ${formatearPrecio(subtotalCheckout)} · ` +
+    `Envío ${textoEnvio} · ` +
+    `Total ${formatearPrecio(subtotalCheckout + envio)}`;
+
+  if (
+    !esRetiro &&
+    envio > 0 &&
+    config.gratisDesde > 0
+  ) {
+    resumen +=
+      `. Envío gratis desde ${formatearPrecio(config.gratisDesde)}.`;
+  }
+
+  const resumenElemento =
+    campoCheckout("resumen");
+
+  if (resumenElemento) {
+    resumenElemento.textContent = resumen;
+  }
+}
+
+async function abrirCheckout() {
+  const modal = document.getElementById(
+    "modal-checkout"
+  );
+
+  if (!modal) return;
+
+  const carrito = await refrescarCarrito();
+
+  if (!carrito || carrito.items.length === 0) {
+    return;
+  }
+
+  subtotalCheckout =
+    Number(carrito.total) || 0;
+
+  const config = await obtenerConfigEnvio();
+
+  const campoEntrega = document.getElementById(
+    "checkout-campo-entrega"
+  );
+
+  if (campoEntrega) {
+    campoEntrega.hidden =
+      !config.retiroHabilitado;
+  }
+
+  if (!config.retiroHabilitado && campoCheckout("entrega")) {
+    campoCheckout("entrega").value = "envio";
+  }
+
+  /* Completamos lo que ya sabemos del usuario */
 
   const usuario = usuarioActual();
 
-  let email = usuario?.email;
+  if (usuario) {
+    if (!campoCheckout("nombre").value) {
+      campoCheckout("nombre").value =
+        usuario.nombre || "";
+    }
 
-  if (!email) {
-    email = prompt(
-      "Dejanos tu email para el seguimiento de la compra:"
-    );
-
-    if (!email) return;
-
-    email = email.trim();
-
-    if (!emailValido(email)) {
-      alert(
-        "Ingresá un correo electrónico válido."
-      );
-
-      return;
+    if (!campoCheckout("email").value) {
+      campoCheckout("email").value =
+        usuario.email || "";
     }
   }
+
+  mostrarErrorCheckout("");
+
+  await actualizarResumenCheckout();
+
+  cerrarCarrito();
+
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
+  modal.removeAttribute("inert");
+
+  setTimeout(() => {
+    campoCheckout("nombre")?.focus();
+  }, 50);
+}
+
+function cerrarCheckout() {
+  const modal = document.getElementById(
+    "modal-checkout"
+  );
+
+  if (!modal) return;
+
+  if (modal.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+
+  modal.classList.remove("abierto");
+  modal.setAttribute("aria-hidden", "true");
+  modal.setAttribute("inert", "");
+}
+
+async function iniciarCheckout(evento) {
+  evento.preventDefault();
+
+  const boton = document.getElementById(
+    "btn-checkout-pagar"
+  );
+
+  const datos = {
+    nombre: campoCheckout("nombre").value.trim(),
+    email: campoCheckout("email").value.trim(),
+    telefono: campoCheckout("telefono").value.trim(),
+    dni: campoCheckout("dni").value.trim(),
+    metodo_entrega:
+      campoCheckout("entrega")?.value || "envio",
+    direccion: campoCheckout("direccion").value.trim(),
+    ciudad: campoCheckout("ciudad").value.trim(),
+    provincia: campoCheckout("provincia").value.trim(),
+    codigo_postal: campoCheckout("cp").value.trim(),
+    notas: campoCheckout("notas").value.trim()
+  };
+
+  if (!emailValido(datos.email)) {
+    mostrarErrorCheckout(
+      "Ingresá un correo electrónico válido."
+    );
+
+    campoCheckout("email").focus();
+
+    return;
+  }
+
+  mostrarErrorCheckout("");
 
   const textoOriginal = boton.textContent;
 
@@ -485,11 +706,14 @@ async function iniciarCheckout() {
     "Redirigiendo a Mercado Pago...";
 
   try {
+    /*
+      El servidor valida todos los datos y
+      calcula el envío y el total reales.
+    */
+
     const data = await api.post(
       "/pagos/crear-preferencia",
-      {
-        email_comprador: email
-      }
+      datos
     );
 
     const enlacePago =
@@ -509,7 +733,7 @@ async function iniciarCheckout() {
       error
     );
 
-    alert(
+    mostrarErrorCheckout(
       error.message ||
         "No se pudo iniciar el pago."
     );
@@ -517,6 +741,41 @@ async function iniciarCheckout() {
     boton.disabled = false;
     boton.textContent = textoOriginal;
   }
+}
+
+function initCheckoutUI() {
+  const modal = document.getElementById(
+    "modal-checkout"
+  );
+
+  document
+    .getElementById("modal-checkout-cerrar")
+    ?.addEventListener("click", cerrarCheckout);
+
+  modal?.addEventListener("click", (evento) => {
+    if (evento.target === modal) {
+      cerrarCheckout();
+    }
+  });
+
+  document.addEventListener("keydown", (evento) => {
+    if (
+      evento.key === "Escape" &&
+      modal?.classList.contains("abierto")
+    ) {
+      cerrarCheckout();
+    }
+  });
+
+  campoCheckout("entrega")
+    ?.addEventListener(
+      "change",
+      actualizarResumenCheckout
+    );
+
+  document
+    .getElementById("form-checkout")
+    ?.addEventListener("submit", iniciarCheckout);
 }
 
 /* ==================================================
@@ -552,8 +811,10 @@ function initCarritoUI() {
     .getElementById("btn-checkout")
     ?.addEventListener(
       "click",
-      iniciarCheckout
+      abrirCheckout
     );
+
+  initCheckoutUI();
 
   refrescarCarrito();
 }

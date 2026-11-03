@@ -709,6 +709,156 @@
 
 
   <!-- =====================================================
+     MODAL DE DATOS DE COMPRA Y ENTREGA
+     Reutiliza los estilos del modal de login
+====================================================== -->
+
+  <div id="modal-checkout" class="modal modal-auth" aria-hidden="true" inert>
+
+    <div class="modal__caja modal-auth__caja" style="max-height: calc(100vh - 56px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;">
+
+      <button id="modal-checkout-cerrar" class="modal__cerrar" type="button" aria-label="Cerrar">
+        &times;
+      </button>
+
+
+      <div class="modal-auth__cabecera">
+
+        <span class="modal-auth__eyebrow">
+          FINALIZAR COMPRA
+        </span>
+
+        <h2>
+          Datos de entrega
+        </h2>
+
+        <p id="checkout-resumen">
+          Completá tus datos para recibir el pedido.
+        </p>
+
+      </div>
+
+
+      <div id="modal-checkout-error" class="modal__error"></div>
+
+
+      <form id="form-checkout" novalidate>
+
+        <div class="campo">
+          <label for="checkout-nombre">Nombre y apellido</label>
+          <div class="campo__input">
+            <span aria-hidden="true">👤</span>
+            <input id="checkout-nombre" type="text" required autocomplete="name" placeholder="Como figura en tu DNI">
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="checkout-email">Correo electrónico</label>
+          <div class="campo__input">
+            <span aria-hidden="true">✉</span>
+            <input id="checkout-email" type="email" required autocomplete="email" placeholder="nombre@correo.com">
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="checkout-telefono">Teléfono / WhatsApp</label>
+          <div class="campo__input">
+            <span aria-hidden="true">📞</span>
+            <input id="checkout-telefono" type="tel" required autocomplete="tel" placeholder="Ej: 11 2345 6789">
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="checkout-dni">DNI o CUIT</label>
+          <div class="campo__input">
+            <span aria-hidden="true">🪪</span>
+            <input id="checkout-dni" type="text" required inputmode="numeric" placeholder="Solo números">
+          </div>
+        </div>
+
+        <div id="checkout-campo-entrega" class="campo" hidden>
+          <label for="checkout-entrega">Forma de entrega</label>
+          <div class="campo__input">
+            <span aria-hidden="true">🚚</span>
+            <select id="checkout-entrega"
+              style="flex: 1; width: 100%; min-width: 0; padding: 15px 0; color: var(--text); background: transparent; border: 0; outline: 0; font-family: var(--font-body); font-size: 13.5px; font-weight: 500; color-scheme: dark;">
+              <option value="envio">Envío a domicilio</option>
+              <option value="retiro">Retiro en local</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="checkout-campos-envio">
+
+          <div class="campo">
+            <label for="checkout-direccion">Dirección</label>
+            <div class="campo__input">
+              <span aria-hidden="true">📍</span>
+              <input id="checkout-direccion" type="text" autocomplete="street-address" placeholder="Calle, número, piso y depto">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="checkout-ciudad">Ciudad / Localidad</label>
+            <div class="campo__input">
+              <span aria-hidden="true">🏙</span>
+              <input id="checkout-ciudad" type="text" autocomplete="address-level2" placeholder="Tu localidad">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="checkout-provincia">Provincia</label>
+            <div class="campo__input">
+              <span aria-hidden="true">🗺</span>
+              <input id="checkout-provincia" type="text" autocomplete="address-level1" placeholder="Ej: Buenos Aires">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="checkout-cp">Código postal</label>
+            <div class="campo__input">
+              <span aria-hidden="true">🏷</span>
+              <input id="checkout-cp" type="text" autocomplete="postal-code" placeholder="Ej: 1425">
+            </div>
+          </div>
+
+        </div>
+
+        <p id="checkout-retiro-info" class="modal-auth__seguridad" hidden></p>
+
+        <div class="campo">
+          <label for="checkout-notas">Notas (opcional)</label>
+          <div class="campo__input">
+            <span aria-hidden="true">📝</span>
+            <input id="checkout-notas" type="text" maxlength="500" placeholder="Horario, referencias, etc.">
+          </div>
+        </div>
+
+        <button id="btn-checkout-pagar" type="submit" class="btn-primario">
+          Continuar al pago
+        </button>
+
+      </form>
+
+
+      <div class="modal-auth__seguridad">
+
+        <span aria-hidden="true">
+          🔒
+        </span>
+
+        <span>
+          El pago se realiza de forma segura en Mercado Pago
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
        MODAL ANTIGUO DE PRODUCTO
   ====================================================== -->
 
