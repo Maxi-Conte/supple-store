@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node --watch backend/server.js",
-    "db:init": "node backend/db/init.js"
+    "db:init": "node backend/db/init.js",
+    "db:migrate": "node backend/db/migrate.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

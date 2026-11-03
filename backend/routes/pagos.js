@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const express = require("express");
 
 const {
@@ -11,6 +12,21 @@ const db = require("../db/database");
 const {
   identificarVisitante
 } = require("../middleware/auth");
+
+const {
+  calcularCostoEnvio,
+  validarDatosComprador
+} = require("../utils/envio");
+
+const {
+  obtenerOrdenCompleta,
+  descontarStockOrden
+} = require("../utils/pedidos");
+
+const {
+  enviarConfirmacionPedido,
+  enviarAvisoNuevaVenta
+} = require("../utils/mailer");
 
 const router = express.Router();
 
@@ -34,10 +50,6 @@ const mpClient = new MercadoPagoConfig({
 /* ==================================================
    FUNCIONES AUXILIARES
 ================================================== */
-
-function emailValido(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 function formatearPeso(pesoGramos) {
   const peso = Number(pesoGramos);
@@ -65,6 +77,86 @@ function crearTituloMercadoPago(item) {
   return datos.join(" - ");
 }
 
+/*
+  Mercado Pago solo acepta back_urls y notification_url
+  con una URL pública. En localhost las dejamos afuera.
+*/
+function obtenerUrlPublica() {
+  const url = String(
+    process.env.FRONTEND_URL || ""
+  ).trim().replace(/\/+$/, "");
+
+  return url.startsWith("https://")
+    ? url
+    : null;
+}
+
+/* ==================================================
+   VALIDAR FIRMA DEL WEBHOOK
+   https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks
+
+   Si MP_WEBHOOK_SECRET no está cargado (desarrollo),
+   se omite la validación.
+================================================== */
+
+let avisoFirmaMostrado = false;
+
+function firmaWebhookValida(req, dataId) {
+  const secreto =
+    process.env.MP_WEBHOOK_SECRET?.trim();
+
+  if (!secreto) {
+    if (!avisoFirmaMostrado) {
+      console.warn(
+        "⚠️ Falta MP_WEBHOOK_SECRET: el webhook no valida la firma de Mercado Pago."
+      );
+
+      avisoFirmaMostrado = true;
+    }
+
+    return true;
+  }
+
+  const cabecera = String(
+    req.headers["x-signature"] || ""
+  );
+
+  const requestId = String(
+    req.headers["x-request-id"] || ""
+  );
+
+  const partes = Object.fromEntries(
+    cabecera
+      .split(",")
+      .map((parte) =>
+        parte.split("=").map((valor) => valor.trim())
+      )
+  );
+
+  if (!partes.ts || !partes.v1) {
+    return false;
+  }
+
+  /* Los ids alfanuméricos se firman en minúscula */
+  const manifiesto =
+    `id:${String(dataId).toLowerCase()};` +
+    `request-id:${requestId};` +
+    `ts:${partes.ts};`;
+
+  const esperado = crypto
+    .createHmac("sha256", secreto)
+    .update(manifiesto)
+    .digest("hex");
+
+  const recibido = Buffer.from(partes.v1);
+  const calculado = Buffer.from(esperado);
+
+  return (
+    recibido.length === calculado.length &&
+    crypto.timingSafeEqual(recibido, calculado)
+  );
+}
+
 /* ==================================================
    CREAR PREFERENCIA
    POST /api/pagos/crear-preferencia
@@ -78,19 +170,20 @@ router.post(
     let preferenciaCreada = false;
 
     try {
-      const emailComprador = String(
-        req.body.email_comprador || ""
-      ).trim();
+      /* ==========================================
+         VALIDAR DATOS DEL COMPRADOR Y ENTREGA
+      ========================================== */
 
-      if (
-        emailComprador &&
-        !emailValido(emailComprador)
-      ) {
+      const validacion =
+        validarDatosComprador(req.body);
+
+      if (validacion.error) {
         return res.status(400).json({
-          error:
-            "Ingresá un correo electrónico válido."
+          error: validacion.error
         });
       }
+
+      const comprador = validacion.datos;
 
       /* ==========================================
          BUSCAR EL CARRITO DEL VISITANTE
@@ -224,12 +317,19 @@ router.post(
          CALCULAR TOTAL REAL
       ========================================== */
 
-      const total = items.reduce(
+      const subtotal = items.reduce(
         (acumulador, item) =>
           acumulador +
           item.precio * item.cantidad,
         0
       );
+
+      const costoEnvio = calcularCostoEnvio(
+        comprador.metodo_entrega,
+        subtotal
+      );
+
+      const total = subtotal + costoEnvio;
 
       /* ==========================================
          CREAR LA ORDEN
@@ -239,12 +339,28 @@ router.post(
         `
           INSERT INTO ordenes (
             usuario_id,
+            carrito_id,
             email_comprador,
+            nombre_comprador,
+            telefono,
+            dni,
+            metodo_entrega,
+            direccion,
+            ciudad,
+            provincia,
+            codigo_postal,
+            notas,
+            subtotal,
+            costo_envio,
             total,
             estado
           )
 
-          VALUES ($1, $2, $3, 'pendiente')
+          VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8,
+            $9, $10, $11, $12, $13, $14, $15,
+            'pendiente'
+          )
 
           RETURNING id
         `,
@@ -253,8 +369,19 @@ router.post(
             ? null
             : req.usuarioId,
 
-          emailComprador || null,
-
+          carritoId,
+          comprador.email,
+          comprador.nombre,
+          comprador.telefono,
+          comprador.dni,
+          comprador.metodo_entrega,
+          comprador.direccion || null,
+          comprador.ciudad || null,
+          comprador.provincia || null,
+          comprador.codigo_postal || null,
+          comprador.notas || null,
+          subtotal,
+          costoEnvio,
           total
         ]
       );
@@ -304,46 +431,71 @@ router.post(
       const preference =
         new Preference(mpClient);
 
+      const itemsMercadoPago = items.map((item) => ({
+        /*
+          Usamos variante_id para identificar
+          exactamente lo que se está comprando.
+        */
+
+        id: String(item.variante_id),
+
+        title:
+          crearTituloMercadoPago(item),
+
+        quantity: item.cantidad,
+
+        unit_price: item.precio,
+
+        currency_id: "ARS"
+      }));
+
+      if (costoEnvio > 0) {
+        itemsMercadoPago.push({
+          id: "envio",
+          title: "Envío a domicilio",
+          quantity: 1,
+          unit_price: costoEnvio,
+          currency_id: "ARS"
+        });
+      }
+
+      /*
+        back_urls, auto_return y notification_url
+        solo se activan cuando FRONTEND_URL es una
+        URL pública con HTTPS.
+      */
+
+      const urlPublica = obtenerUrlPublica();
+
+      const urlsRetorno = urlPublica
+        ? {
+            back_urls: {
+              success: `${urlPublica}/pago-exitoso.html?orden=${ordenId}`,
+              failure: `${urlPublica}/pago-fallido.html?orden=${ordenId}`,
+              pending: `${urlPublica}/pago-pendiente.html?orden=${ordenId}`
+            },
+
+            auto_return: "approved",
+
+            notification_url:
+              `${urlPublica}/api/pagos/webhook`
+          }
+        : {};
+
       const resultado =
         await preference.create({
           body: {
-            items: items.map((item) => ({
-              /*
-                Usamos variante_id para identificar
-                exactamente lo que se está comprando.
-              */
+            items: itemsMercadoPago,
 
-              id: String(item.variante_id),
-
-              title:
-                crearTituloMercadoPago(item),
-
-              quantity: item.cantidad,
-
-              unit_price: item.precio,
-
-              currency_id: "ARS"
-            })),
-
-            payer: emailComprador
-              ? {
-                  email: emailComprador
-                }
-              : undefined,
+            payer: {
+              name: comprador.nombre,
+              email: comprador.email
+            },
 
             external_reference:
               String(ordenId),
 
-            /*
-              En localhost dejamos desactivados:
-
-              back_urls
-              auto_return
-              notification_url
-
-              Los activaremos cuando Kratos tenga
-              una URL pública con HTTPS.
-            */
+            ...urlsRetorno,
 
             payment_methods: {
               installments: 12
@@ -436,21 +588,37 @@ router.post("/webhook", async (req, res) => {
     } = req.body || {};
 
     /*
+      Mercado Pago manda el id también en la URL
+      (?data.id=...) y es el que usa para firmar.
+    */
+
+    const pagoId =
+      req.query["data.id"] || data?.id;
+
+    /*
       Mercado Pago puede enviar otros tipos
       de notificaciones. Solo procesamos pagos.
     */
 
     if (
       type !== "payment" ||
-      !data?.id
+      !pagoId
     ) {
       return res.sendStatus(200);
+    }
+
+    if (!firmaWebhookValida(req, pagoId)) {
+      console.error(
+        "Webhook rechazado: firma de Mercado Pago inválida."
+      );
+
+      return res.sendStatus(401);
     }
 
     const payment = new Payment(mpClient);
 
     const info = await payment.get({
-      id: data.id
+      id: pagoId
     });
 
     const ordenId = Number(
@@ -481,121 +649,103 @@ router.post("/webhook", async (req, res) => {
     ========================================== */
 
     if (estado === "pagado") {
-      /*
-        Solo actualizamos si la orden todavía no estaba
-        marcada como pagada.
+      const cliente = await db.connect();
 
-        Esto evita descontar stock dos veces cuando
-        Mercado Pago repite una notificación.
-      */
+      let ordenPagada = false;
 
-      const ordenActualizada = await db.query(
-        `
-          UPDATE ordenes
+      try {
+        await cliente.query("BEGIN");
 
-          SET
-            estado = 'pagado',
-            mp_payment_id = $1
+        /*
+          Solo actualizamos si la orden todavía no
+          tenía el pago registrado.
 
-          WHERE id = $2
-            AND estado <> 'pagado'
+          Esto evita descontar stock dos veces cuando
+          Mercado Pago repite una notificación.
+        */
 
-          RETURNING id
-        `,
-        [
-          String(info.id),
-          ordenId
-        ]
-      );
+        const ordenActualizada = await cliente.query(
+          `
+            UPDATE ordenes
 
-      if (
-        ordenActualizada.rows.length === 0
-      ) {
-        return res.sendStatus(200);
-      }
+            SET
+              estado = 'pagado',
+              mp_payment_id = $1,
+              actualizado_en = CURRENT_TIMESTAMP
 
-      const itemsResult = await db.query(
-        `
-          SELECT
-            producto_id,
-            variante_id,
-            cantidad
+            WHERE id = $2
+              AND estado IN ('pendiente', 'rechazado')
 
-          FROM orden_items
+            RETURNING carrito_id
+          `,
+          [
+            String(info.id),
+            ordenId
+          ]
+        );
 
-          WHERE orden_id = $1
-            AND variante_id IS NOT NULL
-        `,
-        [ordenId]
-      );
-
-      for (const item of itemsResult.rows) {
-        const resultadoStock =
-          await db.query(
-            `
-              UPDATE producto_variantes
-
-              SET stock = stock - $1
-
-              WHERE id = $2
-                AND stock >= $1
-
-              RETURNING id, stock
-            `,
-            [
-              Number(item.cantidad),
-              Number(item.variante_id)
-            ]
+        if (ordenActualizada.rows.length > 0) {
+          await descontarStockOrden(
+            ordenId,
+            cliente
           );
 
-        if (
-          resultadoStock.rows.length === 0
-        ) {
-          console.error(
-            "No se pudo descontar el stock de la variante:",
-            {
-              orden_id: ordenId,
-              variante_id:
-                item.variante_id,
-              cantidad:
-                item.cantidad
-            }
-          );
+          /* La compra ya está hecha: vaciamos el carrito */
+
+          const carritoId =
+            ordenActualizada.rows[0].carrito_id;
+
+          if (carritoId) {
+            await cliente.query(
+              `
+                DELETE FROM carrito_items
+                WHERE carrito_id = $1
+              `,
+              [carritoId]
+            );
+          }
+
+          ordenPagada = true;
         }
+
+        await cliente.query("COMMIT");
+      } catch (error) {
+        await cliente.query("ROLLBACK");
+        throw error;
+      } finally {
+        cliente.release();
       }
 
-      /*
-        Sincronizamos la columna antigua productos.stock
-        para que el panel administrador todavía muestre
-        un total coherente.
-      */
+      if (ordenPagada) {
+        /*
+          Los mails se mandan sin frenar la respuesta
+          a Mercado Pago. Si fallan, queda en el log.
+        */
 
-      await db.query(
-        `
-          UPDATE productos p
-
-          SET stock = COALESCE(
-            (
-              SELECT SUM(pv.stock)
-
-              FROM producto_variantes pv
-
-              WHERE pv.producto_id = p.id
-                AND pv.activo = TRUE
-            ),
-            0
+        obtenerOrdenCompleta(ordenId)
+          .then((orden) =>
+            Promise.allSettled([
+              enviarConfirmacionPedido(orden),
+              enviarAvisoNuevaVenta(orden)
+            ])
           )
-
-          WHERE p.id IN (
-            SELECT DISTINCT producto_id
-
-            FROM orden_items
-
-            WHERE orden_id = $1
-          )
-        `,
-        [ordenId]
-      );
+          .then((resultados) => {
+            resultados
+              .filter((r) => r.status === "rejected")
+              .forEach((r) =>
+                console.error(
+                  `No se pudo enviar un mail del pedido #${ordenId}:`,
+                  r.reason?.message || r.reason
+                )
+              );
+          })
+          .catch((error) =>
+            console.error(
+              `Error preparando los mails del pedido #${ordenId}:`,
+              error
+            )
+          );
+      }
 
       return res.sendStatus(200);
     }
@@ -610,10 +760,11 @@ router.post("/webhook", async (req, res) => {
 
         SET
           estado = $1,
-          mp_payment_id = $2
+          mp_payment_id = $2,
+          actualizado_en = CURRENT_TIMESTAMP
 
         WHERE id = $3
-          AND estado <> 'pagado'
+          AND estado IN ('pendiente', 'rechazado')
       `,
       [
         estado,
