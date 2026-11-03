@@ -234,12 +234,26 @@ Todas están explicadas en `.env.example`. Las principales:
 
 # 🚀 Publicación en Render
 
-1. En Render: **New → Blueprint** y elegir el repositorio. Usa `render.yaml`: crea la base y el servidor, y corre `npm run db:setup` en cada deploy.
+1. En Render: **New → Blueprint** y elegir el repositorio. Usa `render.yaml`: crea la base y el servidor, y corre `npm run db:setup` en cada deploy (crea las tablas la primera vez y aplica las migraciones).
 2. Completar en Render las variables marcadas como secretas (Mercado Pago, SMTP, admin, negocio).
 3. Poner en `FRONTEND_URL` la URL https que da Render (o el dominio propio).
-4. En Mercado Pago → Tus integraciones → Webhooks: configurar `https://TU-DOMINIO/api/pagos/webhook` con el evento **Pagos** y copiar la clave secreta en `MP_WEBHOOK_SECRET`.
-5. Cambiar las credenciales `TEST-` por las de producción.
-6. Respaldos: el plan gratis de Render no guarda copias. Hacer `npm run db:backup` apuntando a la base de Render o pasar a un plan pago con backups diarios.
+4. **Copiar el catálogo** (categorías, marcas, productos y variantes) desde tu base local. En Render → base de datos → *Connections* copiar la **External Database URL** y, desde tu PC:
+
+   ```bash
+   DESTINO_DATABASE_URL="postgresql://...external-url..." npm run db:copiar-catalogo
+   ```
+
+   En PowerShell (Windows):
+
+   ```powershell
+   $env:DESTINO_DATABASE_URL="postgresql://...external-url..."; npm.cmd run db:copiar-catalogo
+   ```
+
+   No copia usuarios ni pedidos, no borra nada y se puede repetir (actualiza lo que ya existe).
+5. En Mercado Pago → Tus integraciones → Webhooks: configurar `https://TU-DOMINIO/api/pagos/webhook` con el evento **Pagos** y copiar la clave secreta en `MP_WEBHOOK_SECRET`.
+6. Cambiar las credenciales `TEST-` por las de producción.
+7. Hacer una compra real chica de punta a punta (pago, email, pedido en el panel, stock) y reintegrarla desde el panel.
+8. Respaldos: el plan gratis de Render no guarda copias. Hacer `npm run db:backup` apuntando a la base de Render o pasar a un plan pago con backups diarios.
 
 > El plan gratis de Render apaga el servidor cuando no tiene visitas y la base gratuita vence a los 30 días. Para vender de verdad conviene un plan pago.
 

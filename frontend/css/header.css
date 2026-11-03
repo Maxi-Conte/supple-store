@@ -1,0 +1,481 @@
+/* =========================================================
+   KRATOS — HEADER DE ESCRITORIO Y TABLET
+   Logo | buscador | cuenta y carrito
+   + fila de categorías con subrayado lima.
+   En celular (hasta 768 px) sigue mandando responsive.css.
+========================================================= */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+  Los enlaces internos (#productos, "Ver catálogo") bajan suave.
+  productos.js hace su propia bajada al cambiar de categoría.
+*/
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/*
+  Al saltar a #productos (por ejemplo, "Todos" estando ya en el
+  inicio), el título no queda tapado por el header fijo.
+*/
+#productos {
+  scroll-margin-top: 80px;
+}
+
+@media (min-width: 769px) {
+  #productos {
+    scroll-margin-top: 136px;
+  }
+}
+
+/* El buscador solo existe en pantallas grandes */
+.header-busqueda {
+  display: none;
+}
+
+@media (min-width: 769px) {
+
+  :root {
+    --header-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+
+  /* -------------------------------------------------------
+     CONTENEDOR
+  ------------------------------------------------------- */
+
+  .header {
+    background: rgba(12, 13, 15, .82);
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: none;
+
+    transition:
+      background 220ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .header::after {
+    opacity: .55;
+  }
+
+  /* Al bajar por la página */
+  .header.header--scroll {
+    background: rgba(10, 11, 13, .94);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .28);
+  }
+
+
+  /* -------------------------------------------------------
+     FILA PRINCIPAL
+  ------------------------------------------------------- */
+
+  .header__top {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 32px;
+
+    min-height: 76px;
+    padding: 12px 32px;
+  }
+
+
+  /* -------------------------------------------------------
+     LOGO
+     La imagen trae mucho margen: la agrandamos dentro de
+     una caja que recorta para que el logo se lea bien.
+  ------------------------------------------------------- */
+
+  .header-logo {
+    grid-column: auto;
+
+    justify-content: flex-start;
+
+    width: 170px;
+    height: 42px;
+
+    overflow: hidden;
+
+    transition: opacity 200ms ease;
+  }
+
+  .header-logo:hover {
+    transform: none;
+    filter: none;
+    opacity: .82;
+  }
+
+  .header-logo__imagen-completa {
+    position: absolute;
+    top: 50%;
+    left: -18.5%;
+
+    width: 137%;
+    max-width: none;
+    height: auto;
+
+    transform: translateY(-50%);
+  }
+
+
+  /* -------------------------------------------------------
+     BUSCADOR
+  ------------------------------------------------------- */
+
+  .header-busqueda {
+    justify-self: center;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 520px;
+    height: 44px;
+    padding: 0 8px 0 16px;
+
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+
+    cursor: text;
+
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .header-busqueda:focus-within {
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(230, 255, 77, .45);
+    box-shadow: 0 0 0 3px rgba(230, 255, 77, .07);
+  }
+
+  .header-busqueda__icono {
+    flex: 0 0 auto;
+
+    width: 17px;
+    height: 17px;
+
+    fill: none;
+    stroke: #7b818c;
+    stroke-width: 2;
+    stroke-linecap: round;
+
+    transition: stroke 180ms ease;
+  }
+
+  .header-busqueda:focus-within .header-busqueda__icono {
+    stroke: var(--lime);
+  }
+
+  .header-busqueda input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    outline: 0;
+
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+
+  .header-busqueda input::placeholder {
+    color: #838993;
+    font-weight: 400;
+  }
+
+  .header-busqueda input::-webkit-search-cancel-button {
+    filter: invert(1) opacity(.45);
+    cursor: pointer;
+  }
+
+  /* Atajo de teclado: "/" enfoca el buscador */
+  .header-busqueda__atajo {
+    flex: 0 0 auto;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+
+    color: #7b818c;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 6px;
+
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .header-busqueda:focus-within .header-busqueda__atajo,
+  .header-busqueda input:not(:placeholder-shown) ~ .header-busqueda__atajo {
+    display: none;
+  }
+
+
+  /* -------------------------------------------------------
+     CUENTA Y CARRITO
+  ------------------------------------------------------- */
+
+  .header__actions {
+    grid-column: auto;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    gap: 9px;
+
+    min-height: 44px;
+    padding: 0 15px;
+
+    color: #c3c7cd;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+    box-shadow: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition:
+      color 180ms ease,
+      background 180ms ease,
+      border-color 180ms ease,
+      transform 160ms var(--header-ease);
+  }
+
+  .icon-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, .045);
+    border-color: rgba(255, 255, 255, .16);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .icon-btn:active {
+    transform: scale(0.97);
+  }
+
+  .icon-btn__icono {
+    opacity: 1;
+  }
+
+  .icon-btn__icono svg {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* El carrito es la acción principal: borde lima */
+  .icon-btn--carrito {
+    border-color: rgba(230, 255, 77, .26);
+  }
+
+  .icon-btn--carrito:hover {
+    background: rgba(230, 255, 77, .07);
+    border-color: rgba(230, 255, 77, .5);
+  }
+
+  .cart-count {
+    min-width: 20px;
+    height: 20px;
+
+    font-size: 10px;
+
+    box-shadow: none;
+  }
+
+
+  /* -------------------------------------------------------
+     CATEGORÍAS: pestañas de texto con subrayado
+  ------------------------------------------------------- */
+
+  .categorias-nav {
+    gap: 4px;
+
+    height: 48px;
+    padding: 0 32px;
+
+    border-top: 1px solid rgba(255, 255, 255, .05);
+  }
+
+  /*
+    Centradas, pero si no entran se pueden desplazar
+    sin que se corte la primera (los márgenes automáticos
+    no rompen el scroll como justify-content: center).
+  */
+  .categorias-nav a:first-child {
+    margin-left: auto;
+  }
+
+  .categorias-nav a:last-child {
+    margin-right: auto;
+  }
+
+  .categorias-nav a,
+  .categorias-nav a:hover,
+  .categorias-nav a.activo {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .categorias-nav a {
+    height: 100%;
+    min-height: 0;
+    padding: 0 14px;
+
+    color: #868c96;
+
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .09em;
+
+    transition: color 180ms ease;
+  }
+
+  .categorias-nav a::after {
+    content: "";
+
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 0;
+
+    height: 2px;
+
+    background: var(--lime);
+    border-radius: 2px 2px 0 0;
+
+    transform: scaleX(0);
+    opacity: 0;
+
+    transition:
+      transform 260ms var(--header-ease),
+      opacity 180ms ease;
+  }
+
+  .categorias-nav a.activo {
+    color: var(--text);
+  }
+
+  .categorias-nav a.activo::after {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Hover solo con mouse (en pantallas táctiles queda "pegado") */
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+
+  .categorias-nav a:hover {
+    color: #eef0f2;
+  }
+
+  .categorias-nav a:not(.activo):hover::after {
+    transform: scaleX(1);
+    opacity: .35;
+  }
+}
+
+/* Notebooks chicas y tablets */
+@media (min-width: 769px) and (max-width: 1100px) {
+
+  .header__top {
+    gap: 20px;
+    padding-inline: 24px;
+  }
+
+  .categorias-nav {
+    padding-inline: 24px;
+  }
+
+  .categorias-nav a {
+    padding: 0 10px;
+    letter-spacing: .06em;
+  }
+
+  .categorias-nav a::after {
+    left: 10px;
+    right: 10px;
+  }
+
+  .header-logo {
+    width: 150px;
+    height: 38px;
+  }
+}
+
+/*
+  Si las categorías no entran (header.js agrega la clase),
+  se difuminan los bordes para indicar que se puede deslizar.
+*/
+@media (min-width: 769px) {
+
+  .categorias-nav.categorias-nav--desborda {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent);
+  }
+
+  .categorias-nav.categorias-nav--desborda.categorias-nav--al-final {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 56px);
+    mask-image: linear-gradient(90deg, transparent, #000 56px);
+  }
+}
+
+/* Tablets: los botones quedan solo con ícono */
+@media (min-width: 769px) and (max-width: 900px) {
+
+  .icon-btn__texto {
+    display: none;
+  }
+
+  .icon-btn {
+    padding: 0 12px;
+  }
+
+  .header-busqueda__atajo {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .categorias-nav a::after {
+    transition: opacity 180ms ease;
+  }
+}

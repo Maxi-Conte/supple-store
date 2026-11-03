@@ -1,0 +1,408 @@
+/* =========================================================
+   KRATOS — TARJETAS DE PRODUCTO
+   Foto sobre panel oscuro dentro de la tarjeta; detalles
+   en lima como el resto del sitio. productos.js le quita
+   el fondo blanco a las fotos para que no queden recuadros.
+   Se carga después de styles.css y responsive.css.
+========================================================= */
+
+:root {
+  --tarjeta-ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+
+/* ---------------------------------------------------------
+   GRILLA
+--------------------------------------------------------- */
+
+.grid-productos {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 22px;
+}
+
+
+/* ---------------------------------------------------------
+   TARJETA
+--------------------------------------------------------- */
+
+.card-producto {
+  position: relative;
+
+  padding: 8px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, .03),
+      rgba(255, 255, 255, .01)
+    ),
+    #16181c;
+
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 18px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 220ms ease,
+    transform 260ms var(--tarjeta-ease),
+    box-shadow 260ms var(--tarjeta-ease);
+}
+
+
+/* ---------------------------------------------------------
+   FOTO
+--------------------------------------------------------- */
+
+.card-producto__img {
+  aspect-ratio: 1 / 1;
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(255, 255, 255, .06) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      150deg,
+      #24272c,
+      #1b1d21 65%
+    );
+
+  border-radius: 12px;
+}
+
+/* Brillo lima suave, como las tarjetas anteriores */
+.card-producto__img::after {
+  background:
+    radial-gradient(
+      140px 100px at 28% 18%,
+      rgba(230, 255, 77, .07),
+      transparent 70%
+    );
+}
+
+.card-producto__img img {
+  position: relative;
+  z-index: 1;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+  padding: 10%;
+
+  object-fit: contain;
+
+  /* Mientras se le quita el fondo blanco, no se muestra */
+  opacity: 0;
+
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, .35));
+
+  transition:
+    opacity 260ms ease,
+    transform 420ms var(--tarjeta-ease);
+}
+
+.card-producto__img img.foto-lista {
+  opacity: 1;
+}
+
+/* Si no se pudo quitar el fondo, la foto queda como recuadro prolijo */
+.card-producto__img img.foto-con-fondo {
+  padding: 12%;
+  border-radius: 18%;
+  filter: none;
+}
+
+.card-producto__icono {
+  font-size: 52px;
+  opacity: .9;
+}
+
+
+/* Etiquetas sobre la foto */
+
+.sello,
+.card-producto__agotado {
+  position: absolute;
+  top: 10px;
+  z-index: 2;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  line-height: 1;
+  text-transform: uppercase;
+
+  transform: none;
+}
+
+.sello {
+  left: 10px;
+
+  color: #121316;
+  background: var(--lime);
+  border: 0;
+}
+
+.card-producto__agotado {
+  right: 10px;
+
+  color: #f1f0ec;
+  background: rgba(18, 19, 22, .82);
+}
+
+
+/* ---------------------------------------------------------
+   INFORMACIÓN
+--------------------------------------------------------- */
+
+.card-producto__body {
+  gap: 5px;
+  padding: 14px 8px 6px;
+}
+
+.card-producto__categoria {
+  overflow: hidden;
+
+  color: #7b818c;
+
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .1em;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-producto__nombre {
+  display: -webkit-box;
+  overflow: hidden;
+
+  margin: 2px 0 0;
+
+  color: var(--text);
+
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.card-producto__sabor {
+  color: #8e949d;
+  font-size: 12.5px;
+}
+
+
+/* ---------------------------------------------------------
+   PRECIO Y BOTÓN
+--------------------------------------------------------- */
+
+.card-producto__footer {
+  gap: 10px;
+
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.card-producto__precio {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.card-producto__desde {
+  color: #7b818c;
+
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.card-producto .precio {
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.card-producto__consultar {
+  color: #8e949d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card-producto .btn-agregar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  min-height: 38px;
+  padding: 0 14px;
+
+  color: #121316;
+  background: var(--lime);
+  border-radius: 10px;
+
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    transform 160ms var(--tarjeta-ease);
+}
+
+.card-producto .btn-agregar svg {
+  width: 15px;
+  height: 15px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  transition: transform 220ms var(--tarjeta-ease);
+}
+
+.card-producto .btn-agregar:active {
+  transform: scale(0.97);
+}
+
+.card-producto .sin-stock {
+  color: #8e949d;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+/* Sin stock: la tarjeta queda más apagada */
+.card-producto--sin-stock .card-producto__img img.foto-lista,
+.card-producto--sin-stock .card-producto__icono {
+  opacity: .5;
+  filter: grayscale(.6);
+}
+
+
+/* ---------------------------------------------------------
+   HOVER (solo con mouse)
+--------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+
+  .card-producto:hover {
+    border-color: rgba(230, 255, 77, .38);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .32);
+  }
+
+  .card-producto:hover .card-producto__img img {
+    transform: scale(1.04);
+  }
+
+  .card-producto:hover .btn-agregar {
+    background: #f0ff7a;
+    opacity: 1;
+  }
+
+  .card-producto:hover .btn-agregar svg {
+    transform: translateX(3px);
+  }
+}
+
+.card-producto:focus-within {
+  border-color: rgba(230, 255, 77, .38);
+}
+
+
+/* ---------------------------------------------------------
+   CELULAR
+--------------------------------------------------------- */
+
+@media (max-width: 640px) {
+
+  .grid-productos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .card-producto {
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .card-producto__img {
+    border-radius: 10px;
+  }
+
+  .sello,
+  .card-producto__agotado {
+    top: 7px;
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+
+  .sello {
+    left: 7px;
+  }
+
+  .card-producto__agotado {
+    right: 7px;
+  }
+
+  .card-producto__body {
+    padding: 11px 5px 4px;
+  }
+
+  .card-producto__categoria {
+    font-size: 9.5px;
+  }
+
+  .card-producto__nombre {
+    font-size: 13.5px;
+  }
+
+  .card-producto__sabor {
+    font-size: 11.5px;
+  }
+
+  .card-producto__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .card-producto .precio {
+    font-size: 16px;
+  }
+
+  .card-producto .btn-agregar {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-producto,
+  .card-producto__img img,
+  .card-producto .btn-agregar svg {
+    transition: none;
+  }
+}

@@ -21,13 +21,16 @@ async function cargarCategorias() {
 
   const categoriaActiva = params.get("categoria");
 
+  /* Mientras se ve una búsqueda, ninguna categoría queda marcada */
+  const hayBusqueda = Boolean(params.get("buscar"));
+
   try {
     const categorias = await api.get("/categorias");
 
     const linkTodos = `
       <a
-        href="/"
-        class="${!categoriaActiva ? "activo" : ""}"
+        href="/#productos"
+        class="${!categoriaActiva && !hayBusqueda ? "activo" : ""}"
       >
         Todos
       </a>
@@ -77,15 +80,264 @@ const ICONOS_CATEGORIA = {
   "frutos-secos": "🥜"
 };
 
+function escaparTarjeta(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatearPesoTarjeta(pesoGramos) {
+  const peso = Number(pesoGramos);
+
+  if (!peso) return "";
+
+  /* Espacio que no se corta: "930 g" nunca queda en dos renglones */
+  return peso >= 1000
+    ? `${Number.isInteger(peso / 1000) ? peso / 1000 : (peso / 1000).toFixed(1)} kg`
+    : `${peso} g`;
+}
+
+/* "Chocolate" o "3 sabores", más el peso si lo hay */
+function resumenTarjeta(producto) {
+  const sabores = String(producto.sabor || "")
+    .split(",")
+    .map((sabor) => sabor.trim())
+    .filter(Boolean);
+
+  const partes = [];
+
+  if (sabores.length === 1) {
+    partes.push(sabores[0]);
+  } else if (sabores.length > 1) {
+    partes.push(`${sabores.length} sabores`);
+  }
+
+  const peso = formatearPesoTarjeta(producto.peso_gramos);
+
+  if (peso) {
+    partes.push(peso);
+  }
+
+  return partes.join(" · ");
+}
+
+/* ==================================================
+   FOTOS SIN FONDO BLANCO
+   Muchas fotos traen fondo blanco: sobre la tarjeta
+   oscura quedan como recuadros. Pintamos la foto en un
+   canvas y borramos solo el blanco que toca los bordes
+   (el blanco de la etiqueta del producto se respeta).
+================================================== */
+
+const fotosProcesadas = new Map();
+
+function quitarFondoBlanco(img) {
+  const lado = 480;
+  const escala = Math.min(
+    lado / img.naturalWidth,
+    lado / img.naturalHeight,
+    1
+  );
+
+  const ancho = Math.max(Math.round(img.naturalWidth * escala), 1);
+  const alto = Math.max(Math.round(img.naturalHeight * escala), 1);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = ancho;
+  canvas.height = alto;
+
+  const contexto = canvas.getContext("2d", { willReadFrequently: true });
+  contexto.drawImage(img, 0, 0, ancho, alto);
+
+  const imagen = contexto.getImageData(0, 0, ancho, alto);
+  const px = imagen.data;
+
+  const esquinas = [
+    0,
+    ancho - 1,
+    (alto - 1) * ancho,
+    alto * ancho - 1
+  ];
+
+  /* Ya es transparente (PNG recortado): no hay nada que hacer */
+  if (esquinas.every((i) => px[i * 4 + 3] < 20)) {
+    return "transparente";
+  }
+
+  const esFondo = (i) => {
+    const r = px[i * 4];
+    const g = px[i * 4 + 1];
+    const b = px[i * 4 + 2];
+
+    return (
+      px[i * 4 + 3] > 0 &&
+      Math.min(r, g, b) > 226 &&
+      Math.max(r, g, b) - Math.min(r, g, b) < 24
+    );
+  };
+
+  /* Si las esquinas no son blancas, el fondo es de color: lo dejamos */
+  if (esquinas.filter(esFondo).length < 3) {
+    return "con-fondo";
+  }
+
+  /* Relleno desde los bordes */
+  const borrado = new Uint8Array(ancho * alto);
+  const pila = [];
+
+  for (let x = 0; x < ancho; x++) {
+    pila.push(x, (alto - 1) * ancho + x);
+  }
+
+  for (let y = 0; y < alto; y++) {
+    pila.push(y * ancho, y * ancho + ancho - 1);
+  }
+
+  while (pila.length) {
+    const i = pila.pop();
+
+    if (borrado[i] || !esFondo(i)) continue;
+
+    borrado[i] = 1;
+    px[i * 4 + 3] = 0;
+
+    const x = i % ancho;
+
+    if (x > 0) pila.push(i - 1);
+    if (x < ancho - 1) pila.push(i + 1);
+    if (i >= ancho) pila.push(i - ancho);
+    if (i < ancho * (alto - 1)) pila.push(i + ancho);
+  }
+
+  /* Borde suave: los píxeles casi blancos pegados al fondo se aclaran */
+  for (let i = 0; i < borrado.length; i++) {
+    if (borrado[i]) continue;
+
+    const x = i % ancho;
+
+    const tocaFondo =
+      (x > 0 && borrado[i - 1]) ||
+      (x < ancho - 1 && borrado[i + 1]) ||
+      (i >= ancho && borrado[i - ancho]) ||
+      (i < ancho * (alto - 1) && borrado[i + ancho]);
+
+    if (!tocaFondo) continue;
+
+    const minimo = Math.min(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]);
+
+    if (minimo > 190) {
+      px[i * 4 + 3] = Math.round(
+        px[i * 4 + 3] * Math.min((226 - minimo) / 36 + 0.15, 1)
+      );
+    }
+  }
+
+  contexto.putImageData(imagen, 0, 0);
+
+  return canvas.toDataURL("image/png");
+}
+
+function prepararFoto(img) {
+  const original = img.getAttribute("src");
+
+  const mostrar = (resultado) => {
+    if (resultado && resultado.startsWith("data:")) {
+      img.addEventListener(
+        "load",
+        () => {
+          img.classList.remove("foto-con-fondo");
+          img.classList.add("foto-lista");
+        },
+        { once: true }
+      );
+
+      img.src = resultado;
+      return;
+    }
+
+    if (resultado === "con-fondo") {
+      img.classList.add("foto-con-fondo");
+    }
+
+    img.classList.add("foto-lista");
+  };
+
+  if (fotosProcesadas.has(original)) {
+    mostrar(fotosProcesadas.get(original));
+    return;
+  }
+
+  /*
+    Las fotos suelen venir de otros sitios: para poder leerlas
+    en el canvas se piden con permiso CORS en una copia aparte.
+    Si el sitio no lo permite, se muestra la original enmarcada.
+  */
+  const copia = new Image();
+  copia.crossOrigin = "anonymous";
+  copia.decoding = "async";
+
+  copia.onload = () => {
+    let resultado;
+
+    try {
+      resultado = quitarFondoBlanco(copia);
+    } catch (error) {
+      resultado = "con-fondo";
+    }
+
+    fotosProcesadas.set(original, resultado);
+    mostrar(resultado);
+  };
+
+  copia.onerror = () => {
+    fotosProcesadas.set(original, "con-fondo");
+    mostrar("con-fondo");
+  };
+
+  copia.src = original;
+
+  /* Si tarda, no dejamos la tarjeta vacía: mostramos la original */
+  setTimeout(() => {
+    if (!img.classList.contains("foto-lista")) {
+      mostrar("con-fondo");
+    }
+  }, 2500);
+
+  img.addEventListener(
+    "error",
+    () => img.classList.add("foto-lista", "foto-con-fondo"),
+    { once: true }
+  );
+}
+
 function tarjetaProducto(producto) {
   const sinStock = Number(producto.stock) <= 0;
+  const precio = Number(producto.precio) || 0;
+
+  const variasVariantes =
+    Number(producto.cantidad_variantes) > 1;
 
   const icono =
     ICONOS_CATEGORIA[producto.categoria_slug] ||
     "🏋️";
 
+  const etiquetaSuperior = [
+    producto.categoria,
+    producto.marca
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const resumen = resumenTarjeta(producto);
+
   return `
-    <article class="card-producto">
+    <article
+      class="card-producto ${sinStock ? "card-producto--sin-stock" : ""}"
+      data-slug="${escaparTarjeta(producto.slug)}"
+    >
 
       <div class="card-producto__img">
 
@@ -93,9 +345,15 @@ function tarjetaProducto(producto) {
           producto.dato_destacado
             ? `
               <span class="sello">
-                ${producto.dato_destacado}
+                ${escaparTarjeta(producto.dato_destacado)}
               </span>
             `
+            : ""
+        }
+
+        ${
+          sinStock
+            ? `<span class="card-producto__agotado">Sin stock</span>`
             : ""
         }
 
@@ -103,13 +361,13 @@ function tarjetaProducto(producto) {
           producto.imagen_url
             ? `
               <img
-                src="${producto.imagen_url}"
-                alt="${producto.nombre}"
+                src="${escaparTarjeta(producto.imagen_url)}"
+                alt="${escaparTarjeta(producto.nombre)}"
                 loading="lazy"
               >
             `
             : `
-              <span class="card-producto__icono">
+              <span class="card-producto__icono" aria-hidden="true">
                 ${icono}
               </span>
             `
@@ -119,19 +377,25 @@ function tarjetaProducto(producto) {
 
       <div class="card-producto__body">
 
-        <span class="card-producto__categoria">
-          ${producto.categoria || ""}
-        </span>
+        ${
+          etiquetaSuperior
+            ? `
+              <span class="card-producto__categoria">
+                ${escaparTarjeta(etiquetaSuperior)}
+              </span>
+            `
+            : ""
+        }
 
         <h3 class="card-producto__nombre">
-          ${producto.nombre}
+          ${escaparTarjeta(producto.nombre)}
         </h3>
 
         ${
-          producto.sabor
+          resumen
             ? `
               <span class="card-producto__sabor">
-                ${producto.sabor}
+                ${escaparTarjeta(resumen)}
               </span>
             `
             : ""
@@ -139,24 +403,37 @@ function tarjetaProducto(producto) {
 
         <div class="card-producto__footer">
 
-          <span class="precio">
-            ${formatearPrecio(producto.precio)}
-          </span>
+          <div class="card-producto__precio">
+            ${
+              precio > 0
+                ? `
+                  ${
+                    variasVariantes
+                      ? `<span class="card-producto__desde">Desde</span>`
+                      : ""
+                  }
+                  <span class="precio">
+                    ${formatearPrecio(precio)}
+                  </span>
+                `
+                : `<span class="card-producto__consultar">Próximamente</span>`
+            }
+          </div>
 
           ${
             sinStock
-              ? `
-                <span class="sin-stock">
-                  Sin stock
-                </span>
-              `
+              ? ""
               : `
                 <button
                   class="btn-agregar btn-comprar"
                   type="button"
-                  data-slug="${producto.slug}"
+                  data-slug="${escaparTarjeta(producto.slug)}"
+                  aria-label="Comprar ${escaparTarjeta(producto.nombre)}"
                 >
                   Comprar
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h13M13 6l6 6-6 6" />
+                  </svg>
                 </button>
               `
           }
@@ -229,12 +506,25 @@ async function cargarProductos() {
         </p>
       `;
 
+    if (
+      categoria ||
+      buscar ||
+      window.location.hash === "#productos"
+    ) {
+      irAProductos();
+    }
+
     grid
-      .querySelectorAll(".btn-comprar")
-      .forEach((boton) => {
-        boton.addEventListener("click", () => {
+      .querySelectorAll(".card-producto__img img")
+      .forEach(prepararFoto);
+
+    /* Toda la tarjeta abre el detalle, no solo el botón */
+    grid
+      .querySelectorAll(".card-producto[data-slug]")
+      .forEach((tarjeta) => {
+        tarjeta.addEventListener("click", () => {
           abrirDetalleProducto(
-            boton.dataset.slug
+            tarjeta.dataset.slug
           );
         });
       });
@@ -1100,6 +1390,110 @@ function iniciarEventosModalProducto() {
       }
     }
   );
+}
+
+/* ==================================================
+   IR A LOS PRODUCTOS
+   Al elegir una categoría o buscar, la página se
+   recarga: la llevamos a los resultados con una
+   bajada suave en vez de dejarla arriba de todo.
+================================================== */
+
+/* Acelera y frena suave (ease-in-out) */
+function suavizarBajada(t) {
+  return t < 0.5
+    ? 8 * t * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 4) / 2;
+}
+
+function irAProductos() {
+  const seccion = document.getElementById("productos");
+
+  if (!seccion) return;
+
+  const header = document.querySelector(".header");
+
+  const alturaHeader = header
+    ? header.getBoundingClientRect().height
+    : 0;
+
+  const inicio = window.scrollY;
+
+  const destino = Math.max(
+    seccion.getBoundingClientRect().top +
+      inicio -
+      alturaHeader -
+      16,
+    0
+  );
+
+  const distancia = destino - inicio;
+
+  const sinMovimiento = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (sinMovimiento || Math.abs(distancia) < 4) {
+    window.scrollTo({ top: destino, behavior: "instant" });
+    return;
+  }
+
+  /* Más lejos, un poco más de tiempo, entre 0,7 y 1,1 segundos */
+  const duracion = Math.min(
+    Math.max(Math.abs(distancia), 700),
+    1100
+  );
+
+  let cancelada = false;
+
+  /* Si el usuario scrollea por su cuenta, le dejamos el control */
+  const cancelar = () => {
+    cancelada = true;
+  };
+
+  const eventosUsuario = ["wheel", "touchstart", "keydown", "mousedown"];
+
+  eventosUsuario.forEach((evento) =>
+    window.addEventListener(evento, cancelar, {
+      once: true,
+      passive: true
+    })
+  );
+
+  const limpiar = () =>
+    eventosUsuario.forEach((evento) =>
+      window.removeEventListener(evento, cancelar)
+    );
+
+  /* Una pausa breve para que se vea la página antes de bajar */
+  setTimeout(() => {
+    const comienzo = performance.now();
+
+    const paso = (ahora) => {
+      if (cancelada) {
+        limpiar();
+        return;
+      }
+
+      const progreso = Math.min(
+        (ahora - comienzo) / duracion,
+        1
+      );
+
+      window.scrollTo({
+        top: inicio + distancia * suavizarBajada(progreso),
+        behavior: "instant"
+      });
+
+      if (progreso < 1) {
+        requestAnimationFrame(paso);
+      } else {
+        limpiar();
+      }
+    };
+
+    requestAnimationFrame(paso);
+  }, 180);
 }
 
 /* ==================================================

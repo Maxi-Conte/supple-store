@@ -12,7 +12,8 @@ services:
     name: kratos-store
     runtime: node
     plan: free
-    buildCommand: npm install && npm run db:setup
+    # npm ci instala exactamente las versiones de package-lock.json
+    buildCommand: npm ci && npm run db:setup
     startCommand: npm start
     healthCheckPath: /api/config
     envVars:
