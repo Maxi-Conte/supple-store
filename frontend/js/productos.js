@@ -21,13 +21,16 @@ async function cargarCategorias() {
 
   const categoriaActiva = params.get("categoria");
 
+  /* Mientras se ve una búsqueda, ninguna categoría queda marcada */
+  const hayBusqueda = Boolean(params.get("buscar"));
+
   try {
     const categorias = await api.get("/categorias");
 
     const linkTodos = `
       <a
         href="/"
-        class="${!categoriaActiva ? "activo" : ""}"
+        class="${!categoriaActiva && !hayBusqueda ? "activo" : ""}"
       >
         Todos
       </a>

@@ -1,0 +1,186 @@
+/* =========================================================
+   KRATOS — AJUSTES PARA CELULAR
+   Se carga después de styles.css y responsive.css.
+========================================================= */
+
+@media (max-width: 760px) {
+
+  /* -------------------------------------------------------
+     INICIO: sin las estadísticas (+9, 100 %, 24/7)
+     para que el usuario llegue antes a los productos
+  ------------------------------------------------------- */
+
+  .hero__stats {
+    display: none;
+  }
+
+
+  /* -------------------------------------------------------
+     DETALLE DEL PRODUCTO: imagen arriba, info debajo
+  ------------------------------------------------------- */
+
+  body .modal-detalle-producto {
+    padding: 12px;
+  }
+
+  body .modal-detalle-producto .modal-detalle-producto__caja {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 18px;
+  }
+
+  body .modal-detalle-producto .detalle-producto {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  body .modal-detalle-producto .detalle-producto__media {
+    padding: 22px 20px 18px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .065);
+  }
+
+  body .modal-detalle-producto .detalle-producto__media::before {
+    width: 230px;
+    height: 230px;
+  }
+
+  /* Imagen chica para que la info entre sin mucho scroll */
+  body .modal-detalle-producto .detalle-producto__imagen-contenedor {
+    max-width: min(210px, 56vw);
+    border-radius: 16px;
+  }
+
+  body .modal-detalle-producto .detalle-producto__imagen {
+    padding: 16px;
+  }
+
+  body .modal-detalle-producto .detalle-producto__informacion {
+    padding: 22px 20px 20px;
+  }
+
+  /* El botón de compra queda siempre a mano al bajar */
+  body .modal-detalle-producto .detalle-producto__agregar {
+    position: sticky;
+    bottom: 12px;
+    z-index: 3;
+
+    /* Franja del color de la ficha: tapa lo que pasa por detrás */
+    box-shadow: 0 0 0 12px #121418;
+  }
+
+  body .modal-detalle-producto .detalle-producto__beneficios span {
+    font-size: 10px;
+  }
+
+
+  /* -------------------------------------------------------
+     FOOTER COMPACTO
+     Marca arriba, Navegación y Contacto en dos columnas,
+     redes en una sola fila.
+  ------------------------------------------------------- */
+
+  .footer {
+    padding: 36px 20px 20px;
+  }
+
+  .footer__contenedor {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 20px;
+  }
+
+  .footer__marca {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  /* La imagen del logo trae mucho margen: la agrandamos y recortamos */
+  .footer__marca h2 {
+    width: 168px;
+    height: 44px;
+    margin: 0 0 12px;
+    background-size: 220px auto;
+    background-position: -24px -52px;
+  }
+
+  .footer__marca p {
+    max-width: 300px;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+
+  .footer h3 {
+    margin: 0 0 14px;
+    font-size: 11px;
+  }
+
+  .footer h3::after {
+    width: 22px;
+    margin-top: 8px;
+  }
+
+  .footer__links {
+    gap: 0;
+  }
+
+  /* La flecha es para el hover del mouse: en celular solo ocupa lugar */
+  .footer__links a {
+    padding: 5px 0;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .footer__links a::before {
+    display: none;
+  }
+
+  .footer__contacto p {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .footer__redes {
+    grid-column: 1 / -1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, .065);
+  }
+
+  .footer__redes h3 {
+    margin: 0;
+  }
+
+  .social-grid {
+    gap: 8px;
+  }
+
+  .social-card {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    font-size: 17px;
+  }
+
+  .footer__bottom {
+    margin-top: 22px;
+    padding-top: 16px;
+    font-size: 10.5px;
+    line-height: 1.7;
+  }
+}
+
+
+/* Celulares muy angostos: una sola columna */
+
+@media (max-width: 340px) {
+  .footer__contenedor {
+    grid-template-columns: 1fr;
+  }
+}

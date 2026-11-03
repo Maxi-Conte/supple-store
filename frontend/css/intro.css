@@ -1,0 +1,367 @@
+/* =========================================================
+   KRATOS — ANIMACIÓN DE ENTRADA
+   Tarro que se agita, salta la tapa y sale el logo.
+   Solo se anima transform y opacity.
+========================================================= */
+
+:root {
+  --intro-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --intro-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Multiplica todos los tiempos de la intro */
+  --intro-ritmo: 1;
+}
+
+/* Al recargar la página: la misma intro, más rápida (~1,4 s) */
+.intro-rapida {
+  --intro-ritmo: 0.4;
+}
+
+/* Navegando dentro de la tienda: no se muestra */
+.sin-intro .intro {
+  display: none;
+}
+
+/* Mientras dura, la página no se desplaza */
+.intro-activa,
+.intro-activa body,
+.intro-rapida,
+.intro-rapida body {
+  overflow: hidden;
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 55%,
+      #1b1d21 0%,
+      var(--bg, #121316) 62%
+    );
+
+  cursor: pointer;
+
+  animation: intro-salida calc(420ms * var(--intro-ritmo)) var(--intro-ease-out) calc(3000ms * var(--intro-ritmo)) forwards;
+}
+
+/* Al saltarla, sale enseguida */
+.intro.intro--saltar {
+  animation: intro-salida 220ms var(--intro-ease-out) forwards;
+}
+
+@keyframes intro-salida {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+
+/* =========================================================
+   ESCENA (todo se escala junto en pantallas chicas)
+========================================================= */
+
+.intro__escena {
+  position: relative;
+
+  width: 200px;
+  height: 260px;
+
+  animation:
+    intro-escena-entrada calc(420ms * var(--intro-ritmo)) var(--intro-ease-out) both,
+    intro-escena-salida calc(420ms * var(--intro-ritmo)) var(--intro-ease-out) calc(3000ms * var(--intro-ritmo)) forwards;
+}
+
+/* Pantallas bajas (celular acostado) */
+@media (max-height: 560px) {
+  .intro__escena {
+    scale: 0.72;
+  }
+}
+
+@keyframes intro-escena-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.94);
+  }
+}
+
+@keyframes intro-escena-salida {
+  to {
+    transform: translateY(-10px) scale(1.04);
+  }
+}
+
+
+/* =========================================================
+   TARRO
+========================================================= */
+
+.intro__tarro {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  transform-origin: 50% 100%;
+
+  animation: intro-agitar calc(1050ms * var(--intro-ritmo)) var(--intro-ease-in-out) calc(380ms * var(--intro-ritmo)) both;
+}
+
+.intro__cuerpo,
+.intro__tapa {
+  position: absolute;
+  left: 0;
+  width: 200px;
+  overflow: visible;
+}
+
+.intro__cuerpo {
+  top: 0;
+  height: 260px;
+  z-index: 2;
+}
+
+.intro__tapa {
+  top: 0;
+  height: 70px;
+  z-index: 3;
+
+  transform-origin: 30% 100%;
+
+  animation: intro-tapa calc(520ms * var(--intro-ritmo)) var(--intro-ease-out) calc(1430ms * var(--intro-ritmo)) both;
+}
+
+/* Agitado: fuerte al principio y se va calmando */
+@keyframes intro-agitar {
+  0%   { transform: rotate(0deg) translateY(0); }
+  10%  { transform: rotate(-9deg) translateY(-10px); }
+  22%  { transform: rotate(8deg) translateY(-4px); }
+  34%  { transform: rotate(-8deg) translateY(-12px); }
+  46%  { transform: rotate(7deg) translateY(-3px); }
+  58%  { transform: rotate(-6deg) translateY(-9px); }
+  70%  { transform: rotate(4deg) translateY(-2px); }
+  82%  { transform: rotate(-2deg) translateY(-4px); }
+  92%  { transform: rotate(1deg) translateY(0); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+/* La tapa salta hacia arriba y se va */
+@keyframes intro-tapa {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-46px, -170px) rotate(-32deg);
+    opacity: 0;
+  }
+}
+
+
+/* =========================================================
+   LUZ Y POLVO AL ABRIRSE
+========================================================= */
+
+.intro__luz {
+  position: absolute;
+  left: 50%;
+  top: 50px;
+  z-index: 1;
+
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(241, 240, 236, 0.16) 0%,
+      transparent 62%
+    );
+
+  opacity: 0;
+
+  animation: intro-luz calc(900ms * var(--intro-ritmo)) ease calc(1450ms * var(--intro-ritmo)) both;
+}
+
+@keyframes intro-luz {
+  0%   { opacity: 0; transform: scale(0.7); }
+  35%  { opacity: 1; }
+  100% { opacity: 0.45; transform: scale(1.15); }
+}
+
+.intro__polvo {
+  position: absolute;
+  left: 50%;
+  top: 56px;
+  z-index: 3;
+}
+
+.intro__polvo span {
+  position: absolute;
+
+  width: var(--t, 6px);
+  height: var(--t, 6px);
+  margin: calc(var(--t, 6px) / -2);
+
+  background: var(--c, #f1f0ec);
+  border-radius: 50%;
+
+  opacity: 0;
+
+  animation: intro-polvo calc(700ms * var(--intro-ritmo)) var(--intro-ease-out) calc(1460ms * var(--intro-ritmo)) both;
+}
+
+@keyframes intro-polvo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(1);
+  }
+}
+
+
+/* =========================================================
+   LOGO
+   Sale desde la boca del tarro: el contenedor recorta
+   todo lo que está por debajo del borde.
+========================================================= */
+
+.intro__salida-logo {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 58px);
+  z-index: 1;
+
+  width: 340px;
+  height: 300px;
+  margin-left: -170px;
+
+  overflow: hidden;
+}
+
+.intro__logo {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+
+  width: 300px;
+  margin-left: -150px;
+
+  transform-origin: 50% 100%;
+
+  /* intro.js le quita el fondo oscuro; el borde difuminado es por si falla */
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+
+  animation: intro-logo calc(760ms * var(--intro-ritmo)) var(--intro-ease-out) calc(1540ms * var(--intro-ritmo)) both;
+}
+
+@keyframes intro-logo {
+  from {
+    opacity: 0;
+    transform: translateY(70%) scale(0.42);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-4%) scale(1);
+  }
+}
+
+
+/* =========================================================
+   BOTÓN SALTAR
+========================================================= */
+
+.intro__saltar {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+
+  padding: 10px 14px;
+
+  color: #8e949d;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition: color 160ms ease, border-color 160ms ease, transform 160ms ease-out;
+}
+
+.intro__saltar:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .intro__saltar:hover {
+    color: var(--text, #f1f0ec);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+}
+
+
+/* =========================================================
+   MOVIMIENTO REDUCIDO: sin agitar ni saltar,
+   solo aparece el logo y se desvanece.
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    animation-delay: 1400ms;
+  }
+
+  .intro__escena {
+    animation: intro-fundido 300ms ease both;
+  }
+
+  .intro__tarro,
+  .intro__polvo {
+    display: none;
+  }
+
+  .intro__salida-logo {
+    top: 50%;
+    bottom: auto;
+    margin-top: -150px;
+  }
+
+  .intro__logo {
+    animation: intro-fundido 400ms ease 150ms both;
+  }
+
+  .intro__luz {
+    display: none;
+  }
+}
+
+@keyframes intro-fundido {
+  from {
+    opacity: 0;
+  }
+}

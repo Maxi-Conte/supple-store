@@ -35,12 +35,125 @@
 
   <link rel="stylesheet" href="/css/responsive.css">
 
+  <link rel="stylesheet" href="/css/header.css">
+
+  <link rel="stylesheet" href="/css/movil.css">
+
   <link rel="icon" type="image/png" href="/img/logo-kratos.png">
+
+  <link rel="stylesheet" href="/css/intro.css">
+
+  <!--
+    Animación de entrada:
+    - primera vez en la visita: completa
+    - al recargar la página: más rápida
+    - navegando por la tienda (categorías, volver): no se muestra
+  -->
+  <script>
+    try {
+      var yaVista = sessionStorage.getItem("kratos-intro") === "1";
+      var navegacion = performance.getEntriesByType("navigation")[0];
+      var recarga = navegacion && navegacion.type === "reload";
+
+      document.documentElement.classList.add(
+        !yaVista ? "intro-activa" : recarga ? "intro-rapida" : "sin-intro"
+      );
+    } catch (error) {
+      document.documentElement.classList.add("sin-intro");
+    }
+  </script>
 
 </head>
 
 
 <body>
+
+  <!-- =====================================================
+       ANIMACIÓN DE ENTRADA: tarro, tapa y logo
+  ====================================================== -->
+
+  <div id="intro" class="intro">
+
+    <div class="intro__escena" aria-hidden="true">
+
+      <div class="intro__luz"></div>
+
+      <div class="intro__salida-logo">
+        <img class="intro__logo" src="/img/logo-kratos.png" alt="" width="300" height="300">
+      </div>
+
+      <div class="intro__tarro">
+
+        <svg class="intro__cuerpo" viewBox="0 0 200 260" aria-hidden="true">
+          <defs>
+            <linearGradient id="intro-plastico" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#0b0c0e" />
+              <stop offset="0.3" stop-color="#26292e" />
+              <stop offset="0.55" stop-color="#1b1d21" />
+              <stop offset="1" stop-color="#0a0b0d" />
+            </linearGradient>
+          </defs>
+
+          <ellipse cx="100" cy="253" rx="74" ry="6" fill="#000" opacity="0.55" />
+
+          <rect x="44" y="52" width="112" height="16" rx="3" fill="#0f1012" />
+          <rect x="28" y="62" width="144" height="188" rx="24" fill="url(#intro-plastico)" />
+
+          <rect x="28" y="104" width="144" height="104" fill="#101114" />
+          <rect x="28" y="104" width="144" height="3" fill="#E6FF4D" />
+          <rect x="28" y="205" width="144" height="3" fill="#E6FF4D" />
+
+          <text x="100" y="152" text-anchor="middle" fill="#F1F0EC"
+            font-family="'Archivo Black', sans-serif" font-size="27" letter-spacing="1">KRATOS</text>
+          <text x="100" y="172" text-anchor="middle" fill="#E6FF4D"
+            font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" letter-spacing="2.6">WHEY PROTEIN</text>
+          <text x="100" y="192" text-anchor="middle" fill="#7B818C"
+            font-family="'JetBrains Mono', monospace" font-size="7" letter-spacing="1.5">2 LB · 908 G</text>
+
+          <rect x="46" y="72" width="7" height="168" rx="3.5" fill="#fff" opacity="0.06" />
+        </svg>
+
+        <svg class="intro__tapa" viewBox="0 0 200 70" aria-hidden="true">
+          <rect x="38" y="22" width="124" height="36" rx="7" fill="url(#intro-plastico)" />
+          <rect x="38" y="22" width="124" height="5" rx="2.5" fill="#2E3238" />
+          <g stroke="#000" stroke-width="2" opacity="0.35">
+            <line x1="48" y1="30" x2="48" y2="54" />
+            <line x1="58" y1="30" x2="58" y2="54" />
+            <line x1="68" y1="30" x2="68" y2="54" />
+            <line x1="78" y1="30" x2="78" y2="54" />
+            <line x1="88" y1="30" x2="88" y2="54" />
+            <line x1="98" y1="30" x2="98" y2="54" />
+            <line x1="108" y1="30" x2="108" y2="54" />
+            <line x1="118" y1="30" x2="118" y2="54" />
+            <line x1="128" y1="30" x2="128" y2="54" />
+            <line x1="138" y1="30" x2="138" y2="54" />
+            <line x1="148" y1="30" x2="148" y2="54" />
+          </g>
+          <rect x="38" y="51" width="124" height="2" fill="#E6FF4D" opacity="0.8" />
+        </svg>
+
+      </div>
+
+      <div class="intro__polvo">
+        <span style="--x: -70px; --y: -60px; --t: 7px;"></span>
+        <span style="--x: -40px; --y: -96px; --t: 5px; --c: #E6FF4D;"></span>
+        <span style="--x: -12px; --y: -120px; --t: 6px;"></span>
+        <span style="--x: 18px; --y: -104px; --t: 4px;"></span>
+        <span style="--x: 48px; --y: -88px; --t: 6px; --c: #E6FF4D;"></span>
+        <span style="--x: 76px; --y: -54px; --t: 5px;"></span>
+        <span style="--x: -92px; --y: -24px; --t: 4px;"></span>
+        <span style="--x: 94px; --y: -20px; --t: 4px; --c: #E6FF4D;"></span>
+        <span style="--x: -26px; --y: -70px; --t: 3px;"></span>
+        <span style="--x: 32px; --y: -62px; --t: 3px;"></span>
+      </div>
+
+    </div>
+
+    <button class="intro__saltar" type="button" aria-label="Saltar la animación de entrada">Saltar</button>
+
+  </div>
+
+  <script src="/js/intro.js"></script>
 
   <!-- =====================================================
        HEADER
@@ -58,6 +171,24 @@
 
       </a>
 
+      <!-- Buscador (escritorio y tablet) -->
+
+      <form id="form-busqueda" class="search-bar header-busqueda" role="search">
+
+        <svg class="header-busqueda__icono" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+
+        <label for="input-busqueda" class="sr-only">Buscar productos</label>
+
+        <input id="input-busqueda" type="search" autocomplete="off"
+          placeholder="Buscar proteínas, creatina, colágeno...">
+
+        <kbd class="header-busqueda__atajo" aria-hidden="true">/</kbd>
+
+      </form>
+
       <!-- Acciones del header -->
 
       <div class="header__actions">
@@ -67,7 +198,10 @@
         <button id="btn-cuenta" class="icon-btn icon-btn--cuenta" type="button" aria-label="Ingresar a mi cuenta">
 
           <span class="icon-btn__icono" aria-hidden="true">
-            👤
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21a8 8 0 0 1 16 0" />
+            </svg>
           </span>
 
           <span class="icon-btn__texto">
@@ -82,7 +216,10 @@
         <button id="btn-abrir-carrito" class="icon-btn icon-btn--carrito" type="button" aria-label="Abrir carrito">
 
           <span class="icon-btn__icono" aria-hidden="true">
-            🛒
+            <svg viewBox="0 0 24 24">
+              <path d="M6 7h12l-1 13H7L6 7Z" />
+              <path d="M9 7a3 3 0 0 1 6 0" />
+            </svg>
           </span>
 
           <span class="icon-btn__texto">
@@ -1338,6 +1475,8 @@
   <script src="/js/carrito.js"></script>
 
   <script src="/js/cuenta.js"></script>
+
+  <script src="/js/header.js"></script>
 
   <script src="/js/menu-mobile.js"></script>
 
