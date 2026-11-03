@@ -134,6 +134,11 @@
     display: none;
   }
 
+  /* Tienda y Ayuda lado a lado; Contacto debajo a todo el ancho */
+  .footer__contacto {
+    grid-column: 1 / -1;
+  }
+
   .footer__contacto p {
     margin: 0 0 10px;
     font-size: 12.5px;

@@ -1,0 +1,191 @@
+/* =========================================================
+   KRATOS — FOOTER DE ESCRITORIO Y TABLET
+   Marca (logo, frase y redes) | Tienda | Ayuda | Contacto
+   y una franja inferior en una sola línea.
+   En celular (hasta 760 px) manda movil.css.
+========================================================= */
+
+@media (min-width: 761px) {
+
+  .footer {
+    padding: 56px 32px 24px;
+  }
+
+  .footer__contenedor {
+    grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(150px, 1fr));
+    grid-template-areas:
+      "marca tienda ayuda contacto"
+      "redes tienda ayuda contacto";
+    grid-template-rows: auto 1fr;
+    gap: 0 clamp(32px, 4vw, 64px);
+  }
+
+  .footer__marca {
+    grid-area: marca;
+    max-width: 340px;
+  }
+
+  .footer__links {
+    grid-area: tienda;
+  }
+
+  .footer__links--ayuda {
+    grid-area: ayuda;
+  }
+
+  .footer__contacto {
+    grid-area: contacto;
+  }
+
+  .footer__redes {
+    grid-area: redes;
+    padding-top: 22px;
+  }
+
+
+  /* -------------------------------------------------------
+     MARCA
+     La imagen del logo trae mucho margen: la agrandamos
+     y recortamos para que se lea bien.
+  ------------------------------------------------------- */
+
+  .footer__marca h2 {
+    width: 184px;
+    height: 46px;
+    margin: 0 0 14px;
+    background-size: 240px auto;
+    background-position: -26px -57px;
+  }
+
+  .footer__marca p {
+    max-width: 300px;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  /* Las redes van debajo de la frase, sin título */
+  .footer__redes h3 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .social-grid {
+    gap: 8px;
+  }
+
+  .social-card {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    font-size: 16px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .social-card:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+
+  /* -------------------------------------------------------
+     TÍTULOS Y LINKS
+  ------------------------------------------------------- */
+
+  .footer h3 {
+    margin: 4px 0 16px;
+    font-size: 11.5px;
+  }
+
+  .footer h3::after {
+    width: 22px;
+    margin-top: 9px;
+  }
+
+  .footer__links {
+    gap: 0;
+  }
+
+  .footer__links a {
+    padding: 5px 0;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  /* La flecha del hover ya no empuja el texto: aparece a la izquierda */
+  .footer__links a::before {
+    position: absolute;
+    left: -16px;
+  }
+
+  .footer__contacto p {
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+
+  /* -------------------------------------------------------
+     FRANJA INFERIOR
+  ------------------------------------------------------- */
+
+  .footer__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+
+    margin-top: 40px;
+    padding-top: 20px;
+
+    font-size: 11px;
+    text-align: left;
+  }
+
+  /* En una sola línea el punto separador sobra */
+  .footer__separador {
+    display: none;
+  }
+
+  .footer__bottom a {
+    color: #8b919b;
+    text-underline-offset: 3px;
+    transition: color 180ms ease;
+  }
+
+  .footer__bottom a:hover {
+    color: var(--text);
+  }
+}
+
+
+/* Tablets: marca arriba a todo el ancho, tres columnas debajo */
+@media (min-width: 761px) and (max-width: 1024px) {
+
+  .footer {
+    padding-inline: 24px;
+  }
+
+  .footer__contenedor {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "marca  marca  redes"
+      "tienda ayuda  contacto";
+    grid-template-rows: auto auto;
+    gap: 32px 28px;
+  }
+
+  .footer__marca {
+    max-width: none;
+  }
+
+  .footer__redes {
+    align-self: center;
+    justify-self: end;
+    padding-top: 0;
+  }
+}
