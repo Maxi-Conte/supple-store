@@ -9,7 +9,8 @@
     "db:init": "node backend/db/init.js",
     "db:migrate": "node backend/db/migrate.js",
     "db:setup": "node backend/db/init.js && node backend/db/migrate.js",
-    "db:backup": "node backend/db/backup.js"
+    "db:backup": "node backend/db/backup.js",
+    "db:copiar-catalogo": "node backend/db/copiar-catalogo.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

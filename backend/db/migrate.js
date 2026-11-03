@@ -8,6 +8,7 @@ const { pool } = require('./database');
   Todas se pueden ejecutar varias veces.
 */
 const MIGRACIONES = [
+  'esquema-actualizaciones.sql',
   'password-reset.sql',
   'pedidos-envio.sql',
   'cupones-arrepentimiento.sql'
