@@ -186,10 +186,18 @@ npm install
 
 Crear el archivo `.env` utilizando `.env.example`.
 
-Inicializar la base de datos:
+Crear las tablas y aplicar las migraciones:
 
 ```bash
-npm run db:init
+npm run db:setup
+```
+
+En una base que ya existe, alcanza con `npm run db:migrate` (se puede correr varias veces).
+
+Hacer un respaldo de la base en `backups/`:
+
+```bash
+npm run db:backup
 ```
 
 Iniciar el servidor:
@@ -208,17 +216,32 @@ npm run dev
 
 # Variables de entorno
 
-El proyecto requiere:
+Todas están explicadas en `.env.example`. Las principales:
 
-```env
-DATABASE_URL=
+| Variable | Para qué sirve |
+| --- | --- |
+| `DATABASE_URL` | Conexión a PostgreSQL |
+| `JWT_SECRET`, `ADMIN_SESSION_SECRET` | Firmar sesiones de clientes y del panel |
+| `ADMIN_USER`, `ADMIN_PASSWORD` | Acceso al panel administrativo |
+| `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY`, `MP_WEBHOOK_SECRET` | Mercado Pago y firma del webhook |
+| `FRONTEND_URL` | URL pública. Con `https://` se activan el retorno y las notificaciones de Mercado Pago |
+| `SMTP_*`, `MAIL_FROM`, `MAIL_TIENDA` | Envío de emails y a dónde llegan los avisos de venta |
+| `ENVIO_COSTO`, `ENVIO_GRATIS_DESDE`, `RETIRO_DIRECCION` | Costo de envío y retiro en local |
+| `NEGOCIO_*` | Datos legales, WhatsApp y redes |
+| `GA_MEASUREMENT_ID`, `META_PIXEL_ID` | Analítica (opcional) |
 
-JWT_SECRET=
+---
 
-MP_ACCESS_TOKEN=
+# 🚀 Publicación en Render
 
-MP_PUBLIC_KEY=
-```
+1. En Render: **New → Blueprint** y elegir el repositorio. Usa `render.yaml`: crea la base y el servidor, y corre `npm run db:setup` en cada deploy.
+2. Completar en Render las variables marcadas como secretas (Mercado Pago, SMTP, admin, negocio).
+3. Poner en `FRONTEND_URL` la URL https que da Render (o el dominio propio).
+4. En Mercado Pago → Tus integraciones → Webhooks: configurar `https://TU-DOMINIO/api/pagos/webhook` con el evento **Pagos** y copiar la clave secreta en `MP_WEBHOOK_SECRET`.
+5. Cambiar las credenciales `TEST-` por las de producción.
+6. Respaldos: el plan gratis de Render no guarda copias. Hacer `npm run db:backup` apuntando a la base de Render o pasar a un plan pago con backups diarios.
+
+> El plan gratis de Render apaga el servidor cuando no tiene visitas y la base gratuita vence a los 30 días. Para vender de verdad conviene un plan pago.
 
 ---
 
@@ -237,20 +260,24 @@ MP_PUBLIC_KEY=
 - Categorías
 - Marcas
 - API completa
+- Checkout con datos de entrega, envío o retiro
+- Cupones de descuento
+- Gestión de pedidos, reintegros por Mercado Pago y avisos por email
+- Mi cuenta con historial de pedidos
+- Recuperación de contraseña
+- Páginas legales y botón de arrepentimiento
+- SEO (sitemap, robots, vista previa al compartir) y analítica opcional
 
 ---
 
 # Próximas mejoras
 
-- Historial de compras.
 - Panel de administración más avanzado.
 - Dashboard con gráficos.
-- Gestión de pedidos.
 - Gestión de clientes.
-- Recuperación de contraseña.
 - Carga de imágenes desde el administrador.
 - Responsive para dispositivos móviles.
-- Deploy en Render.
+- Filtros por marca y precio.
 
 ---
 

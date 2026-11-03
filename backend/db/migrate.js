@@ -9,7 +9,8 @@ const { pool } = require('./database');
 */
 const MIGRACIONES = [
   'password-reset.sql',
-  'pedidos-envio.sql'
+  'pedidos-envio.sql',
+  'cupones-arrepentimiento.sql'
 ];
 
 async function migrar() {

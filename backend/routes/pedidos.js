@@ -1,5 +1,15 @@
 const express = require("express");
+
+const {
+  MercadoPagoConfig,
+  PaymentRefund
+} = require("mercadopago");
+
 const db = require("../db/database");
+
+const mpClient = new MercadoPagoConfig({
+  accessToken: String(process.env.MP_ACCESS_TOKEN || "").trim()
+});
 
 const {
   verificarAdmin
@@ -74,6 +84,9 @@ router.get("/", async (req, res) => {
           o.codigo_postal,
           o.notas,
           o.codigo_seguimiento,
+          o.cupon_codigo,
+          o.descuento,
+          o.reintegrado_en,
           o.mp_payment_id,
           o.creado_en,
           o.actualizado_en,
@@ -116,7 +129,8 @@ router.get("/", async (req, res) => {
         ...orden,
         total: Number(orden.total),
         subtotal: Number(orden.subtotal ?? orden.total),
-        costo_envio: Number(orden.costo_envio) || 0
+        costo_envio: Number(orden.costo_envio) || 0,
+        descuento: Number(orden.descuento) || 0
       }))
     );
   } catch (error) {
@@ -148,6 +162,11 @@ router.patch("/:id/estado", async (req, res) => {
     req.body.codigo_seguimiento || ""
   ).trim().slice(0, 120);
 
+  /* Solo al cancelar: devolver el dinero por Mercado Pago */
+  const reintegrar =
+    nuevoEstado === "cancelado" &&
+    req.body.reintegrar === true;
+
   if (
     !Number.isInteger(ordenId) ||
     ordenId <= 0
@@ -170,7 +189,7 @@ router.patch("/:id/estado", async (req, res) => {
 
     const actualResult = await cliente.query(
       `
-        SELECT estado, metodo_entrega
+        SELECT estado, metodo_entrega, mp_payment_id
         FROM ordenes
         WHERE id = $1
         FOR UPDATE
@@ -230,6 +249,50 @@ router.patch("/:id/estado", async (req, res) => {
       return res.status(409).json({
         error: "Este pedido es con envío: usá \"Enviado\"."
       });
+    }
+
+    /*
+      Reintegro total por Mercado Pago. Si falla,
+      el pedido no se cancela.
+    */
+    if (reintegrar) {
+      if (
+        !ESTADOS_CON_STOCK_DESCONTADO.includes(actual.estado) ||
+        !actual.mp_payment_id
+      ) {
+        await cliente.query("ROLLBACK");
+
+        return res.status(409).json({
+          error: "Este pedido no tiene un pago aprobado para reintegrar."
+        });
+      }
+
+      try {
+        await new PaymentRefund(mpClient).create({
+          payment_id: actual.mp_payment_id,
+          body: {}
+        });
+      } catch (errorMp) {
+        await cliente.query("ROLLBACK");
+
+        console.error(
+          `Mercado Pago rechazó el reintegro del pedido #${ordenId}:`,
+          errorMp?.message || errorMp
+        );
+
+        return res.status(502).json({
+          error: "Mercado Pago no pudo hacer el reintegro. El pedido no se canceló. Probá de nuevo o hacelo desde el panel de Mercado Pago."
+        });
+      }
+
+      await cliente.query(
+        `
+          UPDATE ordenes
+          SET reintegrado_en = CURRENT_TIMESTAMP
+          WHERE id = $1
+        `,
+        [ordenId]
+      );
     }
 
     await cliente.query(
@@ -293,7 +356,9 @@ router.patch("/:id/estado", async (req, res) => {
     }
 
     if (stockDevuelto) {
-      mensaje += " El stock fue devuelto. Recordá hacer el reintegro desde Mercado Pago.";
+      mensaje += reintegrar
+        ? " El stock fue devuelto y el pago se reintegró por Mercado Pago."
+        : " El stock fue devuelto. No se hizo ningún reintegro de dinero.";
     }
 
     res.json({ mensaje });

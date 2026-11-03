@@ -309,6 +309,11 @@ function tablaItems(orden) {
     return `
       <table style="width:100%;border-collapse:collapse;font-size:14px;margin:18px 0;">
         ${filas}
+        ${orden.descuento > 0 ? `
+        <tr>
+          <td style="padding:8px 0;color:#a5a9b0;">Descuento${orden.cupon_codigo ? ` (${escaparHTML(orden.cupon_codigo)})` : ""}</td>
+          <td style="padding:8px 0;color:#a5a9b0;text-align:right;">- ${formatearPrecioMail(orden.descuento)}</td>
+        </tr>` : ""}
         <tr>
           <td style="padding:8px 0;color:#a5a9b0;">Envío</td>
           <td style="padding:8px 0;color:#a5a9b0;text-align:right;">
@@ -329,6 +334,9 @@ function textoItems(orden) {
     return orden.items
         .map((item) => `- ${item.cantidad} x ${describirItem(item)}: ${formatearPrecioMail(item.precio_unitario * item.cantidad)}`)
         .concat(
+            orden.descuento > 0
+                ? `Descuento${orden.cupon_codigo ? ` (${orden.cupon_codigo})` : ""}: - ${formatearPrecioMail(orden.descuento)}`
+                : [],
             `Envío: ${orden.costo_envio > 0 ? formatearPrecioMail(orden.costo_envio) : "Sin cargo"}`,
             `Total: ${formatearPrecioMail(orden.total)}`
         )
@@ -434,7 +442,13 @@ const MENSAJES_ESTADO = {
 };
 
 async function enviarActualizacionPedido(orden) {
-    const mensaje = MENSAJES_ESTADO[orden.estado];
+    const mensaje =
+        orden.estado === "cancelado" && orden.reintegrado_en
+            ? {
+                asunto: "Tu pedido fue cancelado y reintegrado",
+                texto: "Tu pedido fue cancelado y te devolvimos el pago por Mercado Pago. El dinero puede tardar unos días en verse reflejado según tu medio de pago."
+            }
+            : MENSAJES_ESTADO[orden.estado];
 
     if (!mensaje || !orden.email_comprador) return;
 
@@ -476,8 +490,71 @@ KRATOS PERFORMANCE
     });
 }
 
+/* Botón de arrepentimiento: constancia al cliente */
+
+async function enviarConstanciaArrepentimiento(solicitud) {
+    await transporter.sendMail({
+        from: remitente(),
+        to: solicitud.email,
+        subject: `Recibimos tu solicitud de arrepentimiento (${solicitud.codigo}) — KRATOS`,
+
+        text: `
+Hola ${solicitud.nombre}.
+
+Recibimos tu solicitud para revocar la compra del pedido #${solicitud.orden_id}.
+
+Código de trámite: ${solicitud.codigo}
+
+Nos vamos a comunicar con vos para coordinar la devolución del producto y el reintegro.
+
+KRATOS PERFORMANCE
+        `.trim(),
+
+        html: plantillaMail({
+            titulo: "Recibimos tu solicitud",
+            contenido:
+                parrafo(`Hola ${escaparHTML(solicitud.nombre)}. Recibimos tu solicitud para revocar la compra del <strong style="color:#ffffff;">pedido #${Number(solicitud.orden_id)}</strong>.`) +
+                parrafo(`<strong style="color:#ffffff;">Código de trámite:</strong> <span style="color:#e6ff4d;">${escaparHTML(solicitud.codigo)}</span>`) +
+                parrafo("Nos vamos a comunicar con vos para coordinar la devolución del producto y el reintegro.")
+        })
+    });
+}
+
+/* Botón de arrepentimiento: aviso a la tienda */
+
+async function enviarAvisoArrepentimiento(solicitud) {
+    const destino = process.env.MAIL_TIENDA || process.env.SMTP_USER;
+
+    if (!destino) return;
+
+    const datos = [
+        `Código: ${solicitud.codigo}`,
+        `Pedido: #${solicitud.orden_id}`,
+        `Nombre: ${solicitud.nombre}`,
+        `Email: ${solicitud.email}`,
+        `Teléfono: ${solicitud.telefono || "-"}`,
+        `Motivo: ${solicitud.motivo || "-"}`
+    ];
+
+    await transporter.sendMail({
+        from: remitente(),
+        to: destino,
+        replyTo: solicitud.email,
+        subject: `↩️ Arrepentimiento de compra: pedido #${solicitud.orden_id} (${solicitud.codigo})`,
+        text: `${datos.join("\n")}\n\nTenés que responder y coordinar la devolución.`,
+        html: plantillaMail({
+            titulo: "Solicitud de arrepentimiento",
+            contenido:
+                parrafo(datos.map(escaparHTML).join("<br>")) +
+                parrafo("Tenés que responder y coordinar la devolución.")
+        })
+    });
+}
+
 module.exports = {
     enviarCorreoRecuperacion,
+    enviarConstanciaArrepentimiento,
+    enviarAvisoArrepentimiento,
     enviarConfirmacionPedido,
     enviarAvisoNuevaVenta,
     enviarActualizacionPedido

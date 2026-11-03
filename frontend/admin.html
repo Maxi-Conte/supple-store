@@ -138,6 +138,17 @@
                         </span>
                     </button>
 
+                    <button id="btnToggleCupones" type="button" class="btn-categorias-toggle" aria-expanded="false"
+                        aria-controls="contenidoCupones">
+                        <span>
+                            🏷 Cupones
+                        </span>
+
+                        <span id="iconoToggleCupones" class="btn-categorias-toggle__icono">
+                            +
+                        </span>
+                    </button>
+
                     <button id="btnToggleCategorias" type="button" class="btn-categorias-toggle" aria-expanded="false"
                         aria-controls="contenidoCategorias">
                         <span>
@@ -275,6 +286,43 @@
             </section>
 
             <!-- =========================================
+     GESTIÓN DE CUPONES
+========================================= -->
+
+            <section id="contenidoCupones" class="admin-categorias-panel" hidden>
+
+                <div class="admin-categorias__encabezado">
+
+                    <div>
+                        <span class="admin-categorias__etiqueta">
+                            Promociones
+                        </span>
+
+                        <h2>
+                            Cupones de descuento
+                        </h2>
+
+                        <p>
+                            Creá códigos de descuento por porcentaje o monto fijo.
+                            El cliente los ingresa al finalizar la compra.
+                        </p>
+                    </div>
+
+                    <button id="btnNuevoCupon" type="button" class="btn-principal">
+                        + Crear cupón
+                    </button>
+
+                </div>
+
+                <section id="formCupon" class="admin-formulario admin-formulario--categoria">
+                </section>
+
+                <div id="listaCupones" class="grid-categorias-admin">
+                </div>
+
+            </section>
+
+            <!-- =========================================
      GESTIÓN DE CATEGORÍAS
 ========================================= -->
 
@@ -331,6 +379,7 @@
     <script src="/js/admin.js"></script>
     <script src="/js/admin-categorias.js"></script>
     <script src="/js/admin-pedidos.js"></script>
+    <script src="/js/admin-cupones.js"></script>
 
 </body>
 

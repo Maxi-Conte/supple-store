@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preguntas frecuentes — KRATOS</title>
+  <meta name="description" content="Envíos, pagos, cuotas, seguimiento y cambios: respuestas a las preguntas más comunes sobre comprar en KRATOS.">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/legal.css">
+  <link rel="icon" type="image/png" href="/img/logo-kratos.png">
+</head>
+
+<body>
+
+  <main class="legal">
+
+    <a class="legal__volver" href="/">← Volver a la tienda</a>
+
+    <span class="legal__eyebrow">AYUDA</span>
+
+    <h1>Preguntas frecuentes</h1>
+
+    <p class="legal__fecha">¿No encontrás tu respuesta? Escribinos a <span data-negocio="email">[a completar]</span>.</p>
+
+    <details>
+      <summary>¿Necesito crear una cuenta para comprar?</summary>
+      <p>No. Podés comprar como invitado. Si creás una cuenta, vas a poder ver todos tus pedidos desde "Mi cuenta".</p>
+    </details>
+
+    <details>
+      <summary>¿Cómo puedo pagar?</summary>
+      <p>
+        Con Mercado Pago: tarjetas de crédito y débito, dinero en cuenta y efectivo en Pago Fácil o Rapipago.
+        Las cuotas disponibles dependen de tu tarjeta y de las promociones vigentes.
+      </p>
+    </details>
+
+    <details>
+      <summary>¿Cuánto cuesta el envío?</summary>
+      <p id="faq-envio">El costo se muestra antes de pagar, en el paso de datos de entrega.</p>
+    </details>
+
+    <details>
+      <summary>¿Cuánto tarda en llegar?</summary>
+      <p>
+        Preparamos el pedido apenas se aprueba el pago. El plazo de entrega depende de tu zona y de la empresa
+        de transporte. Te avisamos por email cuando lo despachamos.
+      </p>
+    </details>
+
+    <details>
+      <summary>¿Cómo sigo mi pedido?</summary>
+      <p>
+        Te enviamos emails cada vez que cambia el estado del pedido, con el código de seguimiento cuando está en
+        camino. Si compraste con tu cuenta, también lo ves en "Mi cuenta".
+      </p>
+    </details>
+
+    <details>
+      <summary>¿Puedo retirar en persona?</summary>
+      <p id="faq-retiro">Por el momento hacemos solo envíos a domicilio.</p>
+    </details>
+
+    <details>
+      <summary>¿Tengo un cupón de descuento, dónde lo ingreso?</summary>
+      <p>Al finalizar la compra, en el campo "Código de descuento", antes de ir a Mercado Pago.</p>
+    </details>
+
+    <details>
+      <summary>¿Puedo cambiar o devolver un producto?</summary>
+      <p>
+        Sí. Tenés 10 días para arrepentirte de la compra y, si algo llegó mal, lo cambiamos sin costo. Mirá
+        <a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a>.
+      </p>
+    </details>
+
+    <details>
+      <summary>¿Los productos son originales?</summary>
+      <p>Sí. Trabajamos con productos originales, con fecha de vencimiento vigente y precinto de seguridad.</p>
+    </details>
+
+  </main>
+
+  <script src="/js/sitio.js"></script>
+
+  <script>
+    // Completa envío y retiro con la configuración real de la tienda
+    document.addEventListener('sitio:listo', ({ detail }) => {
+      const envio = detail.envio || {};
+      const precio = (valor) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(valor);
+
+      if (envio.costo > 0) {
+        document.getElementById('faq-envio').textContent =
+          `El envío a domicilio cuesta ${precio(envio.costo)}` +
+          (envio.gratisDesde > 0 ? ` y es gratis en compras desde ${precio(envio.gratisDesde)}.` : '.');
+      }
+
+      if (envio.retiroHabilitado) {
+        document.getElementById('faq-retiro').textContent =
+          `Sí, elegí "Retiro en local" al finalizar la compra. Dirección: ${envio.retiroDireccion}. Te avisamos por email cuando esté listo.`;
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -11,6 +11,24 @@
     KRATOS — Suplementos deportivos
   </title>
 
+  <!-- SEO y vista previa al compartir. __URL_SITIO__ lo completa el servidor. -->
+
+  <meta name="description" content="Suplementos deportivos KRATOS: proteínas, creatina, colágeno e hidratación. Comprá online con envío a todo el país y pagá con Mercado Pago.">
+
+  <link rel="canonical" href="__URL_SITIO__/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="KRATOS">
+  <meta property="og:title" content="KRATOS — Suplementos deportivos">
+  <meta property="og:description" content="Proteínas, creatina, colágeno e hidratación. Comprá online y pagá con Mercado Pago.">
+  <meta property="og:url" content="__URL_SITIO__/">
+  <meta property="og:image" content="__URL_SITIO__/img/logo-kratos.png">
+  <meta property="og:locale" content="es_AR">
+
+  <meta name="twitter:card" content="summary_large_image">
+
+  <meta name="theme-color" content="#121316">
+
   <link rel="stylesheet" href="/css/styles.css">
 
   <link rel="stylesheet" href="/css/modal-producto.css">
@@ -834,6 +852,18 @@
           </div>
         </div>
 
+        <div class="campo">
+          <label for="checkout-cupon">Código de descuento (opcional)</label>
+          <div class="campo__input campo__input--password">
+            <span aria-hidden="true">🏷</span>
+            <input id="checkout-cupon" type="text" maxlength="40" autocomplete="off" placeholder="Si tenés un cupón, ingresalo acá"
+              style="text-transform: uppercase;">
+            <button id="btn-aplicar-cupon" class="campo__mostrar-password" type="button">
+              Aplicar
+            </button>
+          </div>
+        </div>
+
         <button id="btn-checkout-pagar" type="submit" class="btn-primario">
           Continuar al pago
         </button>
@@ -850,6 +880,54 @@
         <span>
           El pago se realiza de forma segura en Mercado Pago
         </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+     MODAL MI CUENTA / MIS PEDIDOS
+     Reutiliza los estilos del modal de login y del carrito
+====================================================== -->
+
+  <div id="modal-cuenta" class="modal modal-auth" aria-hidden="true" inert>
+
+    <div class="modal__caja modal-auth__caja" style="max-height: calc(100vh - 56px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.15) transparent;">
+
+      <button id="modal-cuenta-cerrar" class="modal__cerrar" type="button" aria-label="Cerrar">
+        &times;
+      </button>
+
+
+      <div class="modal-auth__cabecera">
+
+        <span class="modal-auth__eyebrow">
+          MI CUENTA
+        </span>
+
+        <h2 id="modal-cuenta-titulo">
+          Mis pedidos
+        </h2>
+
+        <p id="modal-cuenta-email"></p>
+
+      </div>
+
+
+      <div id="modal-cuenta-error" class="modal__error"></div>
+
+
+      <div id="lista-mis-pedidos" style="display: grid; gap: 12px; margin-bottom: 22px;"></div>
+
+
+      <div class="modal__switch">
+
+        <button id="btn-cerrar-sesion" type="button">
+          Cerrar sesión
+        </button>
 
       </div>
 
@@ -1146,8 +1224,24 @@
           Productos
         </a>
 
-        <a href="#">
+        <a href="/preguntas-frecuentes.html">
           Preguntas frecuentes
+        </a>
+
+        <a href="/cambios-y-devoluciones.html">
+          Cambios y devoluciones
+        </a>
+
+        <a href="/terminos.html">
+          Términos y condiciones
+        </a>
+
+        <a href="/privacidad.html">
+          Política de privacidad
+        </a>
+
+        <a href="/arrepentimiento.html">
+          Botón de arrepentimiento
         </a>
 
       </div>
@@ -1183,7 +1277,7 @@
 
         <div class="social-grid">
 
-          <a class="social-card instagram" href="#" aria-label="Instagram">
+          <a class="social-card instagram" href="#" data-red="instagramUrl" aria-label="Instagram">
 
             <span>
               ◎
@@ -1192,7 +1286,7 @@
           </a>
 
 
-          <a class="social-card whatsapp" href="#" aria-label="WhatsApp">
+          <a class="social-card whatsapp" href="#" data-red="whatsappUrl" aria-label="WhatsApp">
 
             <span>
               ☎
@@ -1201,7 +1295,7 @@
           </a>
 
 
-          <a class="social-card tiktok" href="#" aria-label="TikTok">
+          <a class="social-card tiktok" href="#" data-red="tiktokUrl" aria-label="TikTok">
 
             <span>
               ♪
@@ -1219,6 +1313,10 @@
     <div class="footer__bottom">
 
       © 2026 KRATOS PERFORMANCE. Todos los derechos reservados.
+      ·
+      <a href="https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario" target="_blank" rel="noopener">
+        Defensa de las y los consumidores. Para reclamos ingrese aquí
+      </a>
 
     </div>
 
@@ -1231,11 +1329,15 @@
 
   <script src="/js/api.js"></script>
 
+  <script src="/js/sitio.js"></script>
+
   <script src="/js/auth.js"></script>
 
   <script src="/js/productos.js"></script>
 
   <script src="/js/carrito.js"></script>
+
+  <script src="/js/cuenta.js"></script>
 
   <script src="/js/menu-mobile.js"></script>
 

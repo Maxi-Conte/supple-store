@@ -372,6 +372,29 @@ function mostrarPedidosAdmin() {
                                 }
                             </p>
 
+                            ${
+                                pedido.descuento > 0
+                                    ? `
+                                        <p>
+                                            <strong>Cupón:</strong>
+                                            <code>${escaparHTML(pedido.cupon_codigo || "")}</code>
+                                            − ${formatearPrecioPedido(pedido.descuento)}
+                                        </p>
+                                    `
+                                    : ""
+                            }
+
+                            ${
+                                pedido.reintegrado_en
+                                    ? `
+                                        <p>
+                                            <strong>Reintegrado:</strong>
+                                            ${formatearFechaPedido(pedido.reintegrado_en)}
+                                        </p>
+                                    `
+                                    : ""
+                            }
+
                             <p>
                                 <strong>Entrega:</strong>
                                 ${escaparHTML(describirEntregaPedido(pedido))}
@@ -531,6 +554,23 @@ function mostrarFormularioPedido(pedido) {
         }
 
 
+        ${
+            ESTADOS_CON_PAGO.includes(pedido.estado) &&
+            pedido.mp_payment_id
+                ? `
+                    <label id="pedidoReintegrarLabel" style="display: none;">
+                        <input
+                            id="pedidoReintegrar"
+                            type="checkbox"
+                            checked
+                        >
+                        Devolver el pago por Mercado Pago (reintegro total)
+                    </label>
+                `
+                : ""
+        }
+
+
         <div class="acciones-formulario">
 
             <button
@@ -576,6 +616,39 @@ function mostrarFormularioPedido(pedido) {
         );
 
 
+    /* El reintegro solo aparece al elegir "Cancelado" */
+
+    const selectEstado =
+        document.getElementById(
+            "pedidoEstado"
+        );
+
+    const labelReintegro =
+        document.getElementById(
+            "pedidoReintegrarLabel"
+        );
+
+    function actualizarOpcionReintegro() {
+
+        if (!labelReintegro) {
+            return;
+        }
+
+        labelReintegro.style.display =
+            selectEstado.value === "cancelado"
+                ? ""
+                : "none";
+
+    }
+
+    selectEstado.addEventListener(
+        "change",
+        actualizarOpcionReintegro
+    );
+
+    actualizarOpcionReintegro();
+
+
     formPedido.scrollIntoView({
         behavior: "smooth",
         block: "nearest"
@@ -613,6 +686,13 @@ async function guardarEstadoPedido(pedido) {
         )?.value.trim() || "";
 
 
+    const reintegrar =
+        estado === "cancelado" &&
+        document.getElementById(
+            "pedidoReintegrar"
+        )?.checked === true;
+
+
     if (estado === "cancelado") {
 
         const yaPagado =
@@ -621,9 +701,11 @@ async function guardarEstadoPedido(pedido) {
             );
 
         const confirmar = confirm(
-            yaPagado
-                ? `¿Cancelar el pedido #${pedido.id}?\n\nEl stock se va a devolver, pero el reintegro del dinero lo tenés que hacer desde Mercado Pago.`
-                : `¿Cancelar el pedido #${pedido.id}?`
+            !yaPagado
+                ? `¿Cancelar el pedido #${pedido.id}?`
+                : reintegrar
+                    ? `¿Cancelar el pedido #${pedido.id} y devolverle ${formatearPrecioPedido(pedido.total)} al cliente por Mercado Pago?\n\nEl stock se va a devolver. Esta acción no se puede deshacer.`
+                    : `¿Cancelar el pedido #${pedido.id} SIN devolver el dinero?\n\nEl stock se va a devolver.`
         );
 
         if (!confirmar) {
@@ -657,7 +739,8 @@ async function guardarEstadoPedido(pedido) {
                     body: JSON.stringify({
                         estado,
                         codigo_seguimiento:
-                            codigoSeguimiento
+                            codigoSeguimiento,
+                        reintegrar
                     })
                 }
             );
