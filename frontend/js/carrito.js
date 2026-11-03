@@ -414,6 +414,10 @@ async function agregarAlCarrito(
 
     abrirCarrito();
 
+    window.registrarEvento?.("add_to_cart", {
+      items: [{ item_id: String(varianteIdNumerico), quantity: cantidadNumerica }]
+    });
+
     console.log("Producto agregado:", {
       producto_id: productoIdNumerico,
       variante_id: varianteIdNumerico,
@@ -505,6 +509,9 @@ function calcularEnvioCheckout(config, metodo, subtotal) {
 
 let subtotalCheckout = 0;
 
+/* Cupón aplicado: { codigo, descuento } */
+let cuponCheckout = null;
+
 function campoCheckout(id) {
   return document.getElementById(
     `checkout-${id}`
@@ -553,10 +560,13 @@ async function actualizarResumenCheckout() {
       : "";
   }
 
+  const descuento =
+    cuponCheckout?.descuento || 0;
+
   const envio = calcularEnvioCheckout(
     config,
     metodo,
-    subtotalCheckout
+    subtotalCheckout - descuento
   );
 
   const textoEnvio = envio > 0
@@ -567,8 +577,11 @@ async function actualizarResumenCheckout() {
 
   let resumen =
     `Productos ${formatearPrecio(subtotalCheckout)} · ` +
+    (descuento > 0
+      ? `Descuento ${cuponCheckout.codigo} −${formatearPrecio(descuento)} · `
+      : "") +
     `Envío ${textoEnvio} · ` +
-    `Total ${formatearPrecio(subtotalCheckout + envio)}`;
+    `Total ${formatearPrecio(subtotalCheckout - descuento + envio)}`;
 
   if (
     !esRetiro &&
@@ -585,6 +598,46 @@ async function actualizarResumenCheckout() {
   if (resumenElemento) {
     resumenElemento.textContent = resumen;
   }
+}
+
+async function aplicarCupon() {
+  const campo = campoCheckout("cupon");
+  const boton = document.getElementById(
+    "btn-aplicar-cupon"
+  );
+
+  const codigo =
+    campo.value.trim().toUpperCase();
+
+  mostrarErrorCheckout("");
+
+  if (!codigo) {
+    cuponCheckout = null;
+    await actualizarResumenCheckout();
+    return;
+  }
+
+  boton.disabled = true;
+
+  try {
+    cuponCheckout = await api.post(
+      "/pagos/validar-cupon",
+      {
+        codigo,
+        subtotal: subtotalCheckout
+      }
+    );
+
+    boton.textContent = "✓";
+  } catch (error) {
+    cuponCheckout = null;
+    boton.textContent = "Aplicar";
+    mostrarErrorCheckout(error.message);
+  } finally {
+    boton.disabled = false;
+  }
+
+  await actualizarResumenCheckout();
 }
 
 async function abrirCheckout() {
@@ -636,7 +689,13 @@ async function abrirCheckout() {
 
   mostrarErrorCheckout("");
 
-  await actualizarResumenCheckout();
+  /* El carrito pudo cambiar: recalculamos el cupón */
+  if (campoCheckout("cupon")?.value.trim()) {
+    await aplicarCupon();
+  } else {
+    cuponCheckout = null;
+    await actualizarResumenCheckout();
+  }
 
   cerrarCarrito();
 
@@ -683,7 +742,8 @@ async function iniciarCheckout(evento) {
     ciudad: campoCheckout("ciudad").value.trim(),
     provincia: campoCheckout("provincia").value.trim(),
     codigo_postal: campoCheckout("cp").value.trim(),
-    notas: campoCheckout("notas").value.trim()
+    notas: campoCheckout("notas").value.trim(),
+    cupon: campoCheckout("cupon").value.trim()
   };
 
   if (!emailValido(datos.email)) {
@@ -725,6 +785,10 @@ async function iniciarCheckout(evento) {
         "Mercado Pago no devolvió un enlace de pago."
       );
     }
+
+    window.registrarEvento?.("begin_checkout", {
+      value: subtotalCheckout - (cuponCheckout?.descuento || 0)
+    });
 
     window.location.href = enlacePago;
   } catch (error) {
@@ -772,6 +836,32 @@ function initCheckoutUI() {
       "change",
       actualizarResumenCheckout
     );
+
+  document
+    .getElementById("btn-aplicar-cupon")
+    ?.addEventListener("click", aplicarCupon);
+
+  /* Si cambia el código, hay que volver a aplicarlo */
+  campoCheckout("cupon")
+    ?.addEventListener("input", () => {
+      if (!cuponCheckout) return;
+
+      cuponCheckout = null;
+
+      document.getElementById(
+        "btn-aplicar-cupon"
+      ).textContent = "Aplicar";
+
+      actualizarResumenCheckout();
+    });
+
+  campoCheckout("cupon")
+    ?.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") {
+        evento.preventDefault();
+        aplicarCupon();
+      }
+    });
 
   document
     .getElementById("form-checkout")

@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('Falta JWT_SECRET en las variables de entorno');
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-cambiar-en-produccion';
 
 /**

@@ -116,7 +116,7 @@ function actualizarBotonCuenta() {
     "aria-label",
 
     usuario
-      ? "Cerrar sesión"
+      ? "Mi cuenta y mis pedidos"
       : "Ingresar a mi cuenta"
   );
 }
@@ -568,13 +568,14 @@ function initAuthModal() {
     () => {
 
       /*
-        Por ahora conservamos el comportamiento
-        actual: si hay sesión, cerrar sesión.
+        Con sesión iniciada se abre "Mi cuenta",
+        donde están los pedidos y el botón para
+        cerrar sesión.
       */
 
       if (usuarioActual()) {
 
-        cerrarSesion();
+        abrirModalCuenta();
 
         return;
       }

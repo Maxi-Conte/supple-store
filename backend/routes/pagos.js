@@ -19,13 +19,22 @@ const {
 } = require("../utils/envio");
 
 const {
+  ESTADOS_PEDIDO,
+  ESTADOS_CON_STOCK_DESCONTADO,
   obtenerOrdenCompleta,
-  descontarStockOrden
+  descontarStockOrden,
+  devolverStockOrden
 } = require("../utils/pedidos");
 
 const {
+  calcularDescuentoCupon,
+  registrarUsoCupon
+} = require("../utils/cupones");
+
+const {
   enviarConfirmacionPedido,
-  enviarAvisoNuevaVenta
+  enviarAvisoNuevaVenta,
+  enviarActualizacionPedido
 } = require("../utils/mailer");
 
 const router = express.Router();
@@ -324,12 +333,27 @@ router.post(
         0
       );
 
-      const costoEnvio = calcularCostoEnvio(
-        comprador.metodo_entrega,
+      /* Cupón de descuento (opcional) */
+
+      const cupon = await calcularDescuentoCupon(
+        req.body.cupon,
         subtotal
       );
 
-      const total = subtotal + costoEnvio;
+      if (cupon.error) {
+        return res.status(400).json({
+          error: cupon.error
+        });
+      }
+
+      const descuento = cupon.descuento;
+
+      const costoEnvio = calcularCostoEnvio(
+        comprador.metodo_entrega,
+        subtotal - descuento
+      );
+
+      const total = subtotal - descuento + costoEnvio;
 
       /* ==========================================
          CREAR LA ORDEN
@@ -353,12 +377,15 @@ router.post(
             subtotal,
             costo_envio,
             total,
+            cupon_codigo,
+            descuento,
             estado
           )
 
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8,
             $9, $10, $11, $12, $13, $14, $15,
+            $16, $17,
             'pendiente'
           )
 
@@ -382,7 +409,9 @@ router.post(
           comprador.notas || null,
           subtotal,
           costoEnvio,
-          total
+          total,
+          cupon.codigo,
+          descuento
         ]
       );
 
@@ -431,7 +460,7 @@ router.post(
       const preference =
         new Preference(mpClient);
 
-      const itemsMercadoPago = items.map((item) => ({
+      let itemsMercadoPago = items.map((item) => ({
         /*
           Usamos variante_id para identificar
           exactamente lo que se está comprando.
@@ -448,6 +477,29 @@ router.post(
 
         currency_id: "ARS"
       }));
+
+      /*
+        Mercado Pago no acepta items con precio negativo.
+        Con cupón, mandamos los productos como un solo
+        item por el monto ya descontado.
+      */
+
+      if (descuento > 0) {
+        const unidades = items.reduce(
+          (acumulador, item) => acumulador + item.cantidad,
+          0
+        );
+
+        itemsMercadoPago = [
+          {
+            id: `orden-${ordenId}`,
+            title: `Pedido KRATOS #${ordenId} (${unidades} productos, cupón ${cupon.codigo})`,
+            quantity: 1,
+            unit_price: subtotal - descuento,
+            currency_id: "ARS"
+          }
+        ];
+      }
 
       if (costoEnvio > 0) {
         itemsMercadoPago.push({
@@ -576,6 +628,181 @@ router.post(
 );
 
 /* ==================================================
+   CANCELAR UNA ORDEN REINTEGRADA
+   Devuelve true si la orden se canceló ahora
+================================================== */
+
+async function cancelarOrdenReintegrada(ordenId) {
+  const cliente = await db.connect();
+
+  try {
+    await cliente.query("BEGIN");
+
+    const actual = await cliente.query(
+      `
+        SELECT estado
+        FROM ordenes
+        WHERE id = $1
+        FOR UPDATE
+      `,
+      [ordenId]
+    );
+
+    const estado = actual.rows[0]?.estado;
+
+    if (!ESTADOS_CON_STOCK_DESCONTADO.includes(estado)) {
+      await cliente.query("ROLLBACK");
+      return false;
+    }
+
+    await cliente.query(
+      `
+        UPDATE ordenes
+
+        SET
+          estado = 'cancelado',
+          reintegrado_en = COALESCE(reintegrado_en, CURRENT_TIMESTAMP),
+          actualizado_en = CURRENT_TIMESTAMP
+
+        WHERE id = $1
+      `,
+      [ordenId]
+    );
+
+    await devolverStockOrden(ordenId, cliente);
+
+    await cliente.query("COMMIT");
+
+    return true;
+  } catch (error) {
+    await cliente.query("ROLLBACK");
+    throw error;
+  } finally {
+    cliente.release();
+  }
+}
+
+/* ==================================================
+   VALIDAR CUPÓN (vista previa en el checkout)
+   POST /api/pagos/validar-cupon
+   El total real se vuelve a calcular al pagar.
+================================================== */
+
+router.post("/validar-cupon", async (req, res) => {
+  try {
+    const subtotal = Math.max(
+      Number(req.body.subtotal) || 0,
+      0
+    );
+
+    const cupon = await calcularDescuentoCupon(
+      req.body.codigo,
+      subtotal
+    );
+
+    if (cupon.error) {
+      return res.status(400).json({
+        error: cupon.error
+      });
+    }
+
+    if (!cupon.codigo) {
+      return res.status(400).json({
+        error: "Ingresá un código de descuento."
+      });
+    }
+
+    res.json(cupon);
+  } catch (error) {
+    console.error(
+      "Error al validar el cupón:",
+      error
+    );
+
+    res.status(500).json({
+      error: "No se pudo validar el código."
+    });
+  }
+});
+
+/* ==================================================
+   MIS PEDIDOS (usuarios registrados)
+   GET /api/pagos/mis-pedidos
+================================================== */
+
+router.get(
+  "/mis-pedidos",
+  identificarVisitante,
+  async (req, res) => {
+    if (req.esInvitado) {
+      return res.status(401).json({
+        error: "Ingresá a tu cuenta para ver tus pedidos."
+      });
+    }
+
+    try {
+      const resultado = await db.query(
+        `
+          SELECT
+            o.id,
+            o.estado,
+            o.total,
+            o.metodo_entrega,
+            o.codigo_seguimiento,
+            o.creado_en,
+
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'nombre_producto', oi.nombre_producto,
+                  'sabor', oi.sabor,
+                  'peso_gramos', oi.peso_gramos,
+                  'cantidad', oi.cantidad
+                )
+                ORDER BY oi.id
+              ) FILTER (WHERE oi.id IS NOT NULL),
+              '[]'
+            ) AS items
+
+          FROM ordenes o
+
+          LEFT JOIN orden_items oi
+            ON oi.orden_id = o.id
+
+          WHERE o.usuario_id = $1
+            AND o.estado <> 'pendiente'
+
+          GROUP BY o.id
+
+          ORDER BY o.creado_en DESC
+
+          LIMIT 50
+        `,
+        [req.usuarioId]
+      );
+
+      res.json(
+        resultado.rows.map((orden) => ({
+          ...orden,
+          total: Number(orden.total),
+          estado_texto:
+            ESTADOS_PEDIDO[orden.estado] || orden.estado
+        }))
+      );
+    } catch (error) {
+      console.error(
+        "Error al obtener los pedidos del usuario:",
+        error
+      );
+
+      res.status(500).json({
+        error: "No se pudieron cargar tus pedidos."
+      });
+    }
+  }
+);
+
+/* ==================================================
    WEBHOOK DE MERCADO PAGO
    POST /api/pagos/webhook
 ================================================== */
@@ -637,10 +864,37 @@ router.post("/webhook", async (req, res) => {
       return res.sendStatus(200);
     }
 
+    /* ==========================================
+       PAGO DEVUELTO O CONTRACARGO
+       (por ejemplo, un reintegro hecho desde el
+       panel de Mercado Pago)
+    ========================================== */
+
+    if (
+      info.status === "refunded" ||
+      info.status === "charged_back"
+    ) {
+      const cancelada = await cancelarOrdenReintegrada(ordenId);
+
+      if (cancelada) {
+        obtenerOrdenCompleta(ordenId)
+          .then(enviarActualizacionPedido)
+          .catch((error) =>
+            console.error(
+              `No se pudo avisar el reintegro del pedido #${ordenId}:`,
+              error.message
+            )
+          );
+      }
+
+      return res.sendStatus(200);
+    }
+
     const estado =
       info.status === "approved"
         ? "pagado"
-        : info.status === "rejected"
+        : info.status === "rejected" ||
+            info.status === "cancelled"
           ? "rechazado"
           : "pendiente";
 
@@ -676,7 +930,7 @@ router.post("/webhook", async (req, res) => {
             WHERE id = $2
               AND estado IN ('pendiente', 'rechazado')
 
-            RETURNING carrito_id
+            RETURNING carrito_id, cupon_codigo
           `,
           [
             String(info.id),
@@ -687,6 +941,11 @@ router.post("/webhook", async (req, res) => {
         if (ordenActualizada.rows.length > 0) {
           await descontarStockOrden(
             ordenId,
+            cliente
+          );
+
+          await registrarUsoCupon(
+            ordenActualizada.rows[0].cupon_codigo,
             cliente
           );
 

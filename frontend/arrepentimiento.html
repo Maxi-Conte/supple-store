@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botón de arrepentimiento — KRATOS</title>
+  <meta name="description" content="Revocá tu compra en KRATOS dentro de los 10 días. Botón de arrepentimiento (Res. 424/2020).">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/legal.css">
+  <link rel="icon" type="image/png" href="/img/logo-kratos.png">
+</head>
+
+<body>
+
+  <main class="legal">
+
+    <a class="legal__volver" href="/">← Volver a la tienda</a>
+
+    <span class="legal__eyebrow">KRATOS PERFORMANCE</span>
+
+    <h1>Botón de arrepentimiento</h1>
+
+    <p class="legal__fecha">Resolución 424/2020 de la Secretaría de Comercio Interior</p>
+
+    <p>
+      Tenés derecho a revocar tu compra dentro de los <strong>10 días corridos</strong> desde que recibiste el
+      producto o desde la compra, lo que ocurra último, sin explicar el motivo y sin costo
+      (art. 34 de la Ley 24.240). Completá este formulario y te damos un <strong>código de trámite</strong>.
+      Después nos comunicamos con vos para coordinar la devolución y el reintegro.
+    </p>
+
+
+    <div id="arrepentimiento-error" class="modal__error"></div>
+
+    <div id="arrepentimiento-exito" class="legal__aviso" hidden>
+      <p id="arrepentimiento-exito-texto"></p>
+    </div>
+
+
+    <form id="form-arrepentimiento" class="legal__formulario" novalidate>
+
+      <div class="campo">
+        <label for="arr-nombre">Nombre y apellido</label>
+        <div class="campo__input">
+          <span aria-hidden="true">👤</span>
+          <input id="arr-nombre" type="text" required autocomplete="name" placeholder="Como figura en la compra">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="arr-email">Correo electrónico</label>
+        <div class="campo__input">
+          <span aria-hidden="true">✉</span>
+          <input id="arr-email" type="email" required autocomplete="email" placeholder="El que usaste al comprar">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="arr-telefono">Teléfono (opcional)</label>
+        <div class="campo__input">
+          <span aria-hidden="true">📞</span>
+          <input id="arr-telefono" type="tel" autocomplete="tel" placeholder="Para coordinar la devolución">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="arr-orden">Número de pedido</label>
+        <div class="campo__input">
+          <span aria-hidden="true">#</span>
+          <input id="arr-orden" type="text" required inputmode="numeric" placeholder="Figura en el email de confirmación">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="arr-motivo">Comentarios (opcional)</label>
+        <div class="campo__input">
+          <span aria-hidden="true">📝</span>
+          <textarea id="arr-motivo" maxlength="1000" placeholder="No es obligatorio explicar el motivo"></textarea>
+        </div>
+      </div>
+
+      <button id="btn-arrepentimiento" type="submit" class="btn-primario">
+        Quiero revocar mi compra
+      </button>
+
+    </form>
+
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/sitio.js"></script>
+
+  <script>
+    const formulario = document.getElementById('form-arrepentimiento');
+    const cajaError = document.getElementById('arrepentimiento-error');
+
+    formulario.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+
+      const boton = document.getElementById('btn-arrepentimiento');
+      const valor = (id) => document.getElementById(id).value.trim();
+
+      cajaError.textContent = '';
+      cajaError.classList.remove('visible');
+      boton.disabled = true;
+
+      try {
+        const respuesta = await api.post('/arrepentimiento', {
+          nombre: valor('arr-nombre'),
+          email: valor('arr-email'),
+          telefono: valor('arr-telefono'),
+          orden_id: valor('arr-orden'),
+          motivo: valor('arr-motivo')
+        });
+
+        formulario.hidden = true;
+        document.getElementById('arrepentimiento-exito-texto').textContent = respuesta.mensaje;
+        document.getElementById('arrepentimiento-exito').hidden = false;
+      } catch (error) {
+        cajaError.textContent = error.message;
+        cajaError.classList.add('visible');
+        boton.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+
+</html>

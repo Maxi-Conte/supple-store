@@ -87,6 +87,7 @@ async function obtenerOrdenCompleta(ordenId, cliente = db) {
     total: Number(orden.total),
     subtotal: Number(orden.subtotal ?? orden.total),
     costo_envio: Number(orden.costo_envio) || 0,
+    descuento: Number(orden.descuento) || 0,
 
     items: itemsResult.rows.map((item) => ({
       ...item,
